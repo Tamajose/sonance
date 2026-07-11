@@ -3,14 +3,12 @@ import { router } from "expo-router";
 import { Button, StyleSheet, Text, View } from "react-native";
 
 const index = () => {
-  return (
-    <ScreenWrapper>
-      <View>
-        <Text>index</Text>
-        <Button title="welcome" onPress={() => router.push("welcome")} />
-      </View>
-    </ScreenWrapper>
-  );
+    return (
+        <ScreenWrapper>
+            <Text>index</Text>
+            <Button title="welcome" onPress={() => router.push("/welcome")} />
+        </ScreenWrapper>
+    );
 };
 
 export default index;
