@@ -1,13 +1,16 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Loading from "./Loading";
 
-const Button = (
-    { buttonStyle, textStyle, title = "", onPress = () => {} },
+const Button = ({
+    buttonStyle,
+    textStyle,
+    title = "",
+    onPress = () => {},
     loading = false,
     hasShadow = true,
-) => {
+}) => {
     const shadowStyle = {
         shadowColor: theme.colors.dark,
         shadowOffset: { width: 0, height: 10 },

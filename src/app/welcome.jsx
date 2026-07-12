@@ -5,7 +5,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Button from "../components/Button";
 import { theme } from "../constants/theme";
 import { hp, wp } from "../helpers/common";
-import Login from "./login";
 
 const welcome = () => {
     const router = useRouter();
@@ -23,13 +22,13 @@ const welcome = () => {
                     <Button
                         title="Getting Started"
                         buttonStyle={{ marginHorizontal: wp(3) }}
-                        onPress={() => router.push("/SignUp")}
+                        onPress={() => router.push("/signUp")}
                     />
                     <View style={styles.buttomTextContainer}>
                         <Text style={styles.loginText}>
                             Already have an account?
                         </Text>
-                        <Pressable onPress={() => router.push("/Login")}>
+                        <Pressable onPress={() => router.push("/login")}>
                             <Text
                                 style={[
                                     styles.loginText,
