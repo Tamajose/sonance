@@ -22,18 +22,29 @@ const SignUp = () => {
     const nameRef = useRef("");
     const emailRef = useRef("");
     const passwordRef = useRef("");
+    const confirmPasswordRef = useRef("");
     const [loading, setLoading] = useState(false);
 
     const onSubmit = () => {
         if (
             !nameRef.current.trim() ||
             !emailRef.current.trim() ||
-            !passwordRef.current.trim()
+            !passwordRef.current.trim() ||
+            !confirmPasswordRef.current.trim()
         ) {
             if (Platform.OS === "web") {
                 alert("Please fill all the fields!");
             } else {
                 Alert.alert("Sign Up", "Please fill all the fields!");
+            }
+            return;
+        }
+
+        if (passwordRef.current !== confirmPasswordRef.current) {
+            if (Platform.OS === "web") {
+                alert("Passwords do not match!");
+            } else {
+                Alert.alert("Sign Up", "Passwords do not match!");
             }
             return;
         }
@@ -69,6 +80,12 @@ const SignUp = () => {
                         placeholder="Enter your password"
                         secureTextEntry
                         onChangeText={(value) => (passwordRef.current = value)}
+                    />
+                    <Input
+                        icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
+                        placeholder="Confirm your password"
+                        secureTextEntry
+                        onChangeText={(value) => (confirmPasswordRef.current = value)}
                     />
                     <Button
                         title={"Sign Up"}
