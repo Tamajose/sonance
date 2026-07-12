@@ -2,7 +2,7 @@ import ScreenWrapper from "@/components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../assets/icons/Icon";
 import BackButton from "../components/BackButton";
 import Button from "../components/Button";
@@ -18,7 +18,11 @@ const Login = () => {
 
     const onSubmit = () => {
         if (!emailRef.current.trim() || !passwordRef.current.trim()) {
-            Alert.alert("Login", "Please fill all the fields!");
+            if (Platform.OS === 'web') {
+                alert("Please fill all the fields!");
+            } else {
+                Alert.alert("Login", "Please fill all the fields!");
+            }
             return;
         }
     };
@@ -60,7 +64,7 @@ const Login = () => {
                     <Text style={styles.footerText}>
                         Don't have an account?
                     </Text>
-                    <Pressable>
+                    <Pressable onPress={() => router.push("/signUp")}>
                         <Text
                             style={[
                                 styles.footerText,
