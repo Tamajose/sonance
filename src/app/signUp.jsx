@@ -11,6 +11,7 @@ import {
     View,
 } from "react-native";
 import Icon from "../../assets/icons/Icon";
+import { supabase } from "../../lib/supabase.ts";
 import BackButton from "../components/BackButton";
 import Button from "../components/Button";
 import Input from "../components/Input";
@@ -25,7 +26,7 @@ const SignUp = () => {
     const confirmPasswordRef = useRef("");
     const [loading, setLoading] = useState(false);
 
-    const onSubmit = () => {
+    const onSubmit = async () => {
         if (
             !nameRef.current.trim() ||
             !emailRef.current.trim() ||
@@ -47,6 +48,33 @@ const SignUp = () => {
                 Alert.alert("Sign Up", "Passwords do not match!");
             }
             return;
+        }
+
+        let name = nameRef.current.trim();
+        let email = emailRef.current.trim();
+        let password = passwordRef.current.trim();
+
+        setLoading(true);
+
+        const {
+            data: { session },
+            error,
+        } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { name } },
+        });
+
+        setLoading(false);
+
+        console.log("Session: ", session);
+        console.log("Error: ", error);
+        if (error) {
+            if (Platform.OS === "web") {
+                alert(error.message);
+            } else {
+                Alert.alert("Sign Up", error.message);
+            }
         }
     };
 
@@ -85,7 +113,9 @@ const SignUp = () => {
                         icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
                         placeholder="Confirm your password"
                         secureTextEntry
-                        onChangeText={(value) => (confirmPasswordRef.current = value)}
+                        onChangeText={(value) =>
+                            (confirmPasswordRef.current = value)
+                        }
                     />
                     <Button
                         title={"Sign Up"}
