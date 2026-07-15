@@ -1,7 +1,7 @@
-import { router, Stack } from "expo-router";
-import { AuthProvider, useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
+import { Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
+import { supabase } from "../../lib/supabase";
+import { AuthProvider, useAuth } from "../contexts/AuthContext";
 
 const _layout = () => {
     return (
@@ -13,6 +13,7 @@ const _layout = () => {
 
 const MainLayout = () => {
     const { setAuth } = useAuth();
+    const router = useRouter();
 
     useEffect(() => {
         supabase.auth.onAuthStateChange((_event, session) => {
