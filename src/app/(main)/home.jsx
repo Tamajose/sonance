@@ -1,11 +1,12 @@
-import { Button, StyleSheet, View, Text, Pressable } from "react-native";
+import { useRouter } from "expo-router";
+import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
+import Avatar from "../../components/Avatar";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
-import Icon from "../../../assets/icons/Icon";
-import { useRouter } from "expo-router";
 
 const Home = () => {
     const { user, setAuth } = useAuth();
@@ -48,11 +49,11 @@ const Home = () => {
                             />
                         </Pressable>
                         <Pressable onPress={() => router.push("profile")}>
-                            <Icon
-                                name="user"
-                                size={hp(3.2)}
-                                strokeWidth={2}
-                                color={theme.colors.text}
+                            <Avatar
+                                uri={user?.image}
+                                size={hp(4.3)}
+                                rounded={theme.radius.sm}
+                                style={{ borderWidth: 2 }}
                             />
                         </Pressable>
                     </View>
