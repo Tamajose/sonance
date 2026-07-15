@@ -8,7 +8,7 @@ const User = (props) => {
             color="currentColor"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth={props.strokeWidth}
             strokeLinecap="round"
             strokeLinejoin="round"
         >

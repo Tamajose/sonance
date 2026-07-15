@@ -8,7 +8,7 @@ const Mail = (props) => {
             color="currentColor"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.5"
+            strokeWidth={props.strokeWidth}
             strokeLinejoin="round"
         >
             <path d="M2 6L8.91302 9.91697C11.4616 11.361 12.5384 11.361 15.087 9.91697L22 6"></path>

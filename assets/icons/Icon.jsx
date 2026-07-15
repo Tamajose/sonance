@@ -1,9 +1,11 @@
 import { StyleSheet } from "react-native";
 import { theme } from "../../src/constants/theme";
 import ArrowLeft from "./ArrowLeft";
+import Heart from "./Heart";
 import HomeIcon from "./Home";
 import Lock from "./Lock";
 import Mail from "./Mail";
+import Plus from "./Plus";
 import User from "./User";
 
 const icons = {
@@ -12,6 +14,8 @@ const icons = {
     mail: Mail,
     user: User,
     lock: Lock,
+    heart: Heart,
+    plus: Plus,
 };
 
 const Icon = ({ name, ...props }) => {

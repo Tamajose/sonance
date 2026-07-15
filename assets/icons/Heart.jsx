@@ -1,4 +1,4 @@
-const ArrowLeft = (props) => {
+const Heart = (props) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -12,9 +12,9 @@ const ArrowLeft = (props) => {
             strokeLinecap="round"
             strokeLinejoin="round"
         >
-            <path d="M15 6C15 6 9.00001 10.4189 9 12C8.99999 13.5812 15 18 15 18"></path>
+            <path d="M10.4107 19.9679C7.58942 17.8581 2 13.035 2 8.69463C2 5.82581 4.10526 3.50018 7 3.50018C8.5 3.50018 10 4.00018 12 6.00018C14 4.00018 15.5 3.50018 17 3.50018C19.8947 3.50018 22 5.82581 22 8.69463C22 13.035 16.4106 17.8581 13.5893 19.9679C12.6399 20.6778 11.3601 20.6778 10.4107 19.9679Z"></path>
         </svg>
     );
 };
 
-export default ArrowLeft;
+export default Heart;
