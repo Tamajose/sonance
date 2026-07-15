@@ -4,7 +4,8 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Home = () => {
-    const { setAuth } = useAuth();
+    const { user, setAuth } = useAuth();
+    console.log("User: ", user);
 
     const onLogout = async () => {
         const { error } = await supabase.auth.signOut();
