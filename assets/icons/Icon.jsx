@@ -4,6 +4,7 @@ import ArrowLeft from "./ArrowLeft";
 import Heart from "./Heart";
 import HomeIcon from "./Home";
 import Lock from "./Lock";
+import Logout from "./Logout";
 import Mail from "./Mail";
 import Plus from "./Plus";
 import User from "./User";
@@ -16,6 +17,7 @@ const icons = {
     lock: Lock,
     heart: Heart,
     plus: Plus,
+    logout: Logout,
 };
 
 const Icon = ({ name, ...props }) => {
