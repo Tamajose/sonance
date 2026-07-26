@@ -7,6 +7,7 @@ import HomeIcon from "./Home";
 import Lock from "./Lock";
 import Logout from "./Logout";
 import Mail from "./Mail";
+import Phone from "./Phone";
 import Plus from "./Plus";
 import User from "./User";
 
@@ -20,6 +21,7 @@ const icons = {
     plus: Plus,
     logout: Logout,
     edit: Edit,
+    phone: Phone,
 };
 
 const Icon = ({ name, ...props }) => {
