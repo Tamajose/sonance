@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../../assets/icons/Icon";
-import { supabase } from "../../../lib/supabase";
 import Avatar from "../../components/Avatar";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
@@ -11,6 +10,8 @@ import { hp, wp } from "../../helpers/common";
 const Home = () => {
     const { user, setAuth } = useAuth();
     const router = useRouter();
+
+    console.log("User: ", user);
 
     // const onLogout = async () => {
     //     const { error } = await supabase.auth.signOut();
