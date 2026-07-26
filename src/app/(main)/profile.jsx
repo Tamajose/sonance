@@ -1,7 +1,14 @@
 import { useRouter } from "expo-router";
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+    Platform,
+    Pressable,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
+import Avatar from "../../components/Avatar";
 import Header from "../../components/Header";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
@@ -68,6 +75,23 @@ const UserHeader = ({ user, router, handleLogout }) => {
                 >
                     <Icon name="logout" color={theme.colors.rose} />
                 </TouchableOpacity>
+            </View>
+            <View style={styles.container}>
+                <View style={{ gap: 15 }}>
+                    <View style={styles.avatarContainer}>
+                        <Avatar
+                            uri={user?.image}
+                            size={hp(12)}
+                            rounded={theme.radius.xxl * 1.4}
+                        />
+                        <Pressable
+                            style={styles.editIcon}
+                            onPress={() => router.push("/editProfile")}
+                        >
+                            <Icon name="edit" strokeWidth={2.5} size={20} />
+                        </Pressable>
+                    </View>
+                </View>
             </View>
         </View>
     );

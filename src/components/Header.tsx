@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import BackButton from "../components/BackButton";
 
-const Header = ({ title, showBackButton = false, mb = 10 }) => {
+const Header = ({ title, showBackButton = true, mb = 10 }) => {
     const router = useRouter();
     return (
         <View style={[styles.container, { marginBottom: mb }]}>
