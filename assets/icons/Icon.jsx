@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import { theme } from "../../src/constants/theme";
 import ArrowLeft from "./ArrowLeft";
+import Camera from "./Camera";
 import Edit from "./Edit";
 import Heart from "./Heart";
 import HomeIcon from "./Home";
@@ -22,6 +23,7 @@ const icons = {
     logout: Logout,
     edit: Edit,
     phone: Phone,
+    camera: Camera,
 };
 
 const Icon = ({ name, ...props }) => {
