@@ -1,20 +1,23 @@
+import Svg, { Circle, Path } from "react-native-svg";
+
 const User = (props) => {
     return (
-        <svg
+        <Svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            width="24"
-            height="24"
+            width={24}
+            height={24}
             color="currentColor"
             fill="none"
             stroke="currentColor"
             strokeWidth={props.strokeWidth}
             strokeLinecap="round"
             strokeLinejoin="round"
+            {...props}
         >
-            <circle cx="12" cy="7" r="4"></circle>
-            <path d="M12 14C7 14 4 16.5 4 19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19C20 16.5 17 14 12 14Z"></path>
-        </svg>
+            <Circle cx="12" cy="7" r="4" />
+            <Path d="M12 14C7 14 4 16.5 4 19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19C20 16.5 17 14 12 14Z" />
+        </Svg>
     );
 };
 

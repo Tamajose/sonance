@@ -11,13 +11,14 @@ import {
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { getUserImageSrc } from "../../../services/imageService";
+import { updateUser } from "../../../services/userService";
+import Button from "../../components/Button";
 import Header from "../../components/Header";
 import Input from "../../components/Input";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
-import Button from "../../components/Button";
 
 const EditProfile = () => {
     const { user: currentUser } = useAuth();
@@ -57,7 +58,9 @@ const EditProfile = () => {
             return;
         }
         setLoading(true);
-        //update user
+        const res = await updateUser(currentUser?.id, userData);
+        setLoading(false);
+        console.log("Updated user results: ", res);
     };
 
     let imageSource = getUserImageSrc(user.image);

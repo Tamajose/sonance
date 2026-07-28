@@ -33,6 +33,8 @@ const icons = {
 const Icon = ({ name, ...props }) => {
     const IconComponent = icons[name];
 
+    if (!IconComponent) return null;
+
     return (
         <IconComponent
             height={props.size || 24}

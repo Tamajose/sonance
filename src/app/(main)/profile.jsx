@@ -112,7 +112,7 @@ const UserHeader = ({ user, router, handleLogout }) => {
                         {user && user.phoneNumber && (
                             <View style={styles.info}>
                                 <Icon
-                                    name="call"
+                                    name="phone"
                                     size={20}
                                     color={theme.colors.textLight}
                                 />
@@ -124,7 +124,7 @@ const UserHeader = ({ user, router, handleLogout }) => {
                         {user && user.bio && (
                             <View style={styles.info}>
                                 <Icon
-                                    name="call"
+                                    name="bio"
                                     size={20}
                                     color={theme.colors.textLight}
                                 />
