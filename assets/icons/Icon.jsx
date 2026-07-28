@@ -1,10 +1,12 @@
 import { StyleSheet } from "react-native";
 import { theme } from "../../src/constants/theme";
 import ArrowLeft from "./ArrowLeft";
+import Bio from "./Bio";
 import Camera from "./Camera";
 import Edit from "./Edit";
 import Heart from "./Heart";
 import HomeIcon from "./Home";
+import Location from "./Location";
 import Lock from "./Lock";
 import Logout from "./Logout";
 import Mail from "./Mail";
@@ -24,6 +26,8 @@ const icons = {
     edit: Edit,
     phone: Phone,
     camera: Camera,
+    location: Location,
+    bio: Bio,
 };
 
 const Icon = ({ name, ...props }) => {
