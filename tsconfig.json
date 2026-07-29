@@ -12,6 +12,7 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "src/helpers/common.js"
-  ]
+    "src/helpers/common.js",
+    "src/components/Header.jsx"
+, "src/app/_layout.jsx", "src/app/index.jsx", "src/components/ScreenWrapper.jsx"  ]
 }

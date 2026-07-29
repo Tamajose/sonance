@@ -6,6 +6,7 @@ import {
     Text,
     TouchableOpacity,
     View,
+    Alert,
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
@@ -22,6 +23,7 @@ const Profile = () => {
 
     const onLogout = async () => {
         const { error } = await supabase.auth.signOut();
+        if (error) console.log(error);
     };
 
     const handleLogout = async () => {

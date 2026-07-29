@@ -67,7 +67,7 @@ const SignUp = () => {
 
         setLoading(false);
 
-        console.log("Session: ", session);
+        console.log("Session: ", session?.id);
         console.log("Error: ", error);
         if (error) {
             if (Platform.OS === "web") {
@@ -84,7 +84,7 @@ const SignUp = () => {
             <View style={styles.container}>
                 <BackButton router={router} />
                 <View>
-                    <Text style={styles.welcomeText}>Let's</Text>
+                    <Text style={styles.welcomeText}>Let&apos;s</Text>
                     <Text style={styles.welcomeText}>Get Started</Text>
                 </View>
                 <View style={styles.form}>

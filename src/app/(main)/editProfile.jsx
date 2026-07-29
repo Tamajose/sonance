@@ -10,7 +10,7 @@ import {
     View,
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
-import { getUserImageSrc } from "../../../services/imageService";
+import { getUserImageSrc, uploadFile } from "../../../services/imageService";
 import { updateUser } from "../../../services/userService";
 import Button from "../../components/Button";
 import Header from "../../components/Header";
@@ -19,10 +19,13 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 
 const EditProfile = () => {
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, setUserData } = useAuth();
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     const [user, setUser] = useState({
         name: "",
@@ -44,12 +47,23 @@ const EditProfile = () => {
         }
     }, [currentUser]);
 
-    const onPickImage = async () => {};
+    const onPickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+
+        if (!result.canceled) {
+            setUser({ ...user, image: result.assets[0] });
+        }
+    };
 
     const onSubmit = async () => {
         let userData = { ...user };
         let { name, phoneNumber, address, image, bio } = userData;
-        if (!name || !phoneNumber || !address || !bio) {
+        if (!name || !phoneNumber || !address || !bio || !image) {
             if (Platform.OS === "web") {
                 alert("Please fill up all the fields");
             } else {
@@ -58,12 +72,26 @@ const EditProfile = () => {
             return;
         }
         setLoading(true);
+
+        if (typeof image == "object") {
+            let imageRes = await uploadFile("profiles", image?.uri, true);
+            if (imageRes.success) userData.image = imageRes.data;
+            else userData.image = null;
+        }
+
         const res = await updateUser(currentUser?.id, userData);
         setLoading(false);
-        console.log("Updated user results: ", res);
+
+        if (res.success) {
+            setUserData({ ...currentUser, ...userData });
+            router.back();
+        }
     };
 
-    let imageSource = getUserImageSrc(user.image);
+    let imageSource =
+        user.image && typeof user.image == "object"
+            ? user.image.uri
+            : getUserImageSrc(user.image);
 
     return (
         <ScreenWrapper>
