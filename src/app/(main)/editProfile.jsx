@@ -1,4 +1,6 @@
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
     Alert,
@@ -19,8 +21,6 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
-import { useRouter } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
 
 const EditProfile = () => {
     const { user: currentUser, setUserData } = useAuth();
@@ -37,6 +37,7 @@ const EditProfile = () => {
 
     useEffect(() => {
         if (currentUser) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setUser({
                 name: currentUser.name || "",
                 phoneNumber: currentUser.phoneNumber || "",
@@ -49,7 +50,7 @@ const EditProfile = () => {
 
     const onPickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+            mediaTypes: ["images"],
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,

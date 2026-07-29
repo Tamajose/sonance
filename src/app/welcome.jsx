@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import { theme } from "../constants/theme";
 import { hp, wp } from "../helpers/common";
 
-const welcome = () => {
+const Welcome = () => {
     const router = useRouter();
     return (
         <ScreenWrapper bg="white">
@@ -24,7 +24,7 @@ const welcome = () => {
                         buttonStyle={{ marginHorizontal: wp(3) }}
                         onPress={() => router.push("/signUp")}
                     />
-                    <View style={styles.buttomTextContainer}>
+                    <View style={styles.bottomTextContainer}>
                         <Text style={styles.loginText}>
                             Already have an account?
                         </Text>
@@ -48,7 +48,7 @@ const welcome = () => {
     );
 };
 
-export default welcome;
+export default Welcome;
 
 const styles = StyleSheet.create({
     container: {

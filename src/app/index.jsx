@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import Loading from "../components/Loading";
 
-const index = () => {
+const Index = () => {
     const router = useRouter();
     return (
         <View
@@ -13,6 +13,6 @@ const index = () => {
     );
 };
 
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({});

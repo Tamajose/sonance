@@ -7,12 +7,13 @@ const Input = (props) => {
         <View
             style={[
                 styles.container,
-                props.containerStyles && props.containerStyles,
+                props.containerStyle,
+                props.containerStyles,
             ]}
         >
             {props.icon && props.icon}
             <TextInput
-                style={{ flex: 1 }}
+                style={{ flex: 1, color: theme.colors.text }}
                 placeholderTextColor={theme.colors.textLight}
                 ref={props.inputRef && props.inputRef}
                 {...props}
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
         borderColor: theme.colors.text,
         borderRadius: theme.radius.xxl,
         borderCurve: "continuous",
-        padding: 18,
+        paddingHorizontal: 18,
         gap: 12,
     },
 });

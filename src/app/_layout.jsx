@@ -16,6 +16,11 @@ const MainLayout = () => {
     const { setAuth, setUserData } = useAuth();
     const router = useRouter();
 
+    const updateUserData = async (user, email) => {
+        let res = await getUserData(user?.id);
+        if (res.success) setUserData({ ...res.data, email });
+    };
+
     useEffect(() => {
         supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
@@ -28,11 +33,6 @@ const MainLayout = () => {
             }
         });
     }, []);
-
-    const updateUserData = async (user, email) => {
-        let res = await getUserData(user?.id);
-        if (res.success) setUserData({ ...res.data, email });
-    };
 
     return (
         <Stack

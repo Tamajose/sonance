@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import {
+    Alert,
     Platform,
     Pressable,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
-    Alert,
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
@@ -32,21 +32,18 @@ const Profile = () => {
                 onLogout();
             }
         } else {
-            Alert.alert(
-                "Confirm",
-                "Are you sure you want to log out?"[
-                    ({
-                        text: "Cancel",
-                        onPress: () => console.log("Modal cancelled"),
-                        style: "Cancel",
-                    },
-                    {
-                        text: "Log Out",
-                        onPress: () => onLogout(),
-                        style: "destructive",
-                    })
-                ],
-            );
+            Alert.alert("Confirm", "Are you sure you want to log out?", [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Modal cancelled"),
+                    style: "cancel",
+                },
+                {
+                    text: "Log Out",
+                    onPress: () => onLogout(),
+                    style: "destructive",
+                },
+            ]);
         }
         return;
     };
@@ -97,7 +94,9 @@ const UserHeader = ({ user, router, handleLogout }) => {
 
                     <View style={{ alignItems: "center", gap: 4 }}>
                         <Text style={styles.userName}>{user && user.name}</Text>
-                        <Text style={styles.infoText}>New York</Text>
+                        <Text style={styles.infoText}>
+                            {user && user.address}
+                        </Text>
                     </View>
 
                     <View style={{ gap: 10 }}>
