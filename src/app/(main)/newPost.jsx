@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { getSupabaseFileUrl } from "../../../services/imageService";
+import { createOrUpdatePost } from "../../../services/postService";
 import Avatar from "../../components/Avatar";
 import Button from "../../components/Button";
 import Header from "../../components/Header";
@@ -106,6 +107,19 @@ const NewPost = () => {
             body: bodyRef.current,
             userId: user?.id,
         };
+
+        setLoading(true);
+        let res = await createOrUpdatePost(data);
+        setLoading(false);
+
+        if (res.success) {
+            setFile(null);
+            bodyRef.current = "";
+            editorRef.current?.setContentHTML("");
+            router.back();
+        } else {
+            Alert.alert("Post", res.msg);
+        }
     };
 
     console.log("File Uri: ", getFileUri(file));
