@@ -1,15 +1,58 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../../assets/icons/Icon";
+import { supabase } from "../../../lib/supabase";
+import { fetchPosts } from "../../../services/postService";
+import { getUserData } from "../../../services/userService";
 import Avatar from "../../components/Avatar";
+import Loading from "../../components/Loading";
+import PostCard from "../../components/PostCard";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 
+let limit = 0;
+
 const Home = () => {
     const { user, setAuth } = useAuth();
     const router = useRouter();
+
+    const [posts, setPosts] = useState([]);
+
+    const getPosts = async () => {
+        limit += 10;
+        let res = await fetchPosts(limit);
+        if (res.success) {
+            setPosts(res.data);
+        }
+    };
+
+    const handlePostEvents = async (payload) => {
+        if (payload.eventType == "INSERT" && payload?.new?.id) {
+            let newPost = { ...payload.new };
+            let res = await getUserData(newPost.userId);
+            newPost.user = res.success ? res.data : {};
+            setPosts((prevPosts) => [newPost, ...prevPosts]);
+        }
+    };
+
+    useEffect(() => {
+        let postChannel = supabase
+            .channel("posts")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "posts" },
+                handlePostEvents,
+            )
+            .subscribe();
+        getPosts();
+
+        return () => {
+            supabase.removeChannel(postChannel);
+        };
+    }, []);
 
     return (
         <ScreenWrapper>
@@ -43,6 +86,28 @@ const Home = () => {
                         </Pressable>
                     </View>
                 </View>
+                <FlatList
+                    data={posts}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.listStyle}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                        <PostCard
+                            item={item}
+                            currentUser={user}
+                            router={router}
+                        />
+                    )}
+                    ListFooterComponent={
+                        <View
+                            style={{
+                                marginVertical: posts.length === 0 ? 200 : 30,
+                            }}
+                        >
+                            <Loading />
+                        </View>
+                    }
+                />
             </View>
         </ScreenWrapper>
     );

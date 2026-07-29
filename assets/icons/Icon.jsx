@@ -3,6 +3,7 @@ import { theme } from "../../src/constants/theme";
 import ArrowLeft from "./ArrowLeft";
 import Bio from "./Bio";
 import Camera from "./Camera";
+import Comment from "./Comment";
 import Delete from "./Delete";
 import Edit from "./Edit";
 import Heart from "./Heart";
@@ -12,10 +13,12 @@ import Location from "./Location";
 import Lock from "./Lock";
 import Logout from "./Logout";
 import Mail from "./Mail";
+import Options from "./Options";
 import Phone from "./Phone";
 import Plus from "./Plus";
 import User from "./User";
 import Video from "./Video";
+import Share from "./Share";
 
 const icons = {
     home: HomeIcon,
@@ -34,6 +37,9 @@ const icons = {
     image: Image,
     video: Video,
     delete: Delete,
+    options: Options,
+    comment: Comment,
+    share: Share,
 };
 
 const Icon = ({ name, ...props }) => {
