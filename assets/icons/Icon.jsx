@@ -3,9 +3,11 @@ import { theme } from "../../src/constants/theme";
 import ArrowLeft from "./ArrowLeft";
 import Bio from "./Bio";
 import Camera from "./Camera";
+import Delete from "./Delete";
 import Edit from "./Edit";
 import Heart from "./Heart";
 import HomeIcon from "./Home";
+import Image from "./Image";
 import Location from "./Location";
 import Lock from "./Lock";
 import Logout from "./Logout";
@@ -13,6 +15,7 @@ import Mail from "./Mail";
 import Phone from "./Phone";
 import Plus from "./Plus";
 import User from "./User";
+import Video from "./Video";
 
 const icons = {
     home: HomeIcon,
@@ -28,6 +31,9 @@ const icons = {
     camera: Camera,
     location: Location,
     bio: Bio,
+    image: Image,
+    video: Video,
+    delete: Delete,
 };
 
 const Icon = ({ name, ...props }) => {
