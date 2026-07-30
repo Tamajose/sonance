@@ -39,7 +39,7 @@ export const fetchPosts = async (limit = 10) => {
     try {
         const { data, error } = await supabase
             .from("posts")
-            .select(`*, user: users (id, name, image)`)
+            .select(`*, user: users (id, name, image), postLikes(*)`)
             .order("created_at", { ascending: false })
             .limit(limit);
 
@@ -52,5 +52,45 @@ export const fetchPosts = async (limit = 10) => {
     } catch (error) {
         console.log("Error in post fetching: ", error);
         return { success: false, msg: "Could not fetch posts" };
+    }
+};
+
+export const likePost = async (postLike) => {
+    try {
+        const { data, error } = await supabase
+            .from("postLikes")
+            .insert(postLike)
+            .select()
+            .single();
+
+        if (error) {
+            console.log("Error in liking post: ", error);
+            return { success: false, msg: "Could not like post" };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.log("Error in liking post: ", error);
+        return { success: false, msg: "Could not like post" };
+    }
+};
+
+export const unlikePost = async (postId, userId) => {
+    try {
+        const { error } = await supabase
+            .from("postLikes")
+            .delete()
+            .eq("userId", userId)
+            .eq("postId", postId);
+
+        if (error) {
+            console.log("Error in unliking post: ", error);
+            return { success: false, msg: "Could not unlike post" };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.log("Error in unliking post: ", error);
+        return { success: false, msg: "Could not unlike post" };
     }
 };
