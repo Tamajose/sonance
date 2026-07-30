@@ -1,5 +1,5 @@
 import { decode } from "base64-arraybuffer";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { readAsStringAsync } from "expo-file-system/legacy";
 import { Platform } from "react-native";
 import { supabase } from "../lib/supabase";
@@ -22,21 +22,22 @@ export const getSupabaseFileUrl = (filePath) => {
     return null;
 };
 
-// export const downloadFile = async (url) => {
-//     try {
-//         const { uri } = await FileSystem.downloadAsync(
-//             url,
-//             getLocalFilePath(url),
-//         );
-//     } catch (error) {
-//         return null;
-//     }
-// };
+export const downloadFile = async (url) => {
+    try {
+        const { uri } = await FileSystem.downloadAsync(
+            url,
+            getLocalFilePath(url),
+        );
+        return uri;
+    } catch (error) {
+        return null;
+    }
+};
 
-// export const getLocalFilePath = (filePath) => {
-//     let fileName = filePath.split("/").pop();
-//     return `${FileSystem.documentDirectory}${fileName}`;
-// };
+export const getLocalFilePath = (filePath) => {
+    let fileName = filePath.split("/").pop();
+    return `${FileSystem.documentDirectory}${fileName}`;
+};
 
 export const uploadFile = async (folderName, fileUri, isImage = true) => {
     try {

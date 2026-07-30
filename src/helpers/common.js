@@ -11,5 +11,8 @@ export const wp = (percentage) => {
 };
 
 export const stripHtmlTags = (html) => {
+    if (!html || typeof html !== "string") {
+        return "";
+    }
     return html.replace(/<[^>]*>?/gm, "");
 };
