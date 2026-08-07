@@ -19,6 +19,7 @@ import Plus from "./Plus";
 import User from "./User";
 import Video from "./Video";
 import Share from "./Share";
+import Send from "./Send";
 
 const icons = {
     home: HomeIcon,
@@ -40,6 +41,7 @@ const icons = {
     options: Options,
     comment: Comment,
     share: Share,
+    send: Send,
 };
 
 const Icon = ({ name, ...props }) => {
