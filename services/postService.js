@@ -39,7 +39,9 @@ export const fetchPosts = async (limit = 10) => {
     try {
         const { data, error } = await supabase
             .from("posts")
-            .select(`*, user: users (id, name, image), postLikes(*)`)
+            .select(
+                `*, user: users (id, name, image), postLikes(*), comments(count)`,
+            )
             .order("created_at", { ascending: false })
             .limit(limit);
 
@@ -92,5 +94,48 @@ export const unlikePost = async (postId, userId) => {
     } catch (error) {
         console.log("Error in unliking post: ", error);
         return { success: false, msg: "Could not unlike post" };
+    }
+};
+
+export const fetchPostDetails = async (postId) => {
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .select(
+                `*, user: users (id, name, image), postLikes(*), comments(*, user: users(id, name, image))`,
+            )
+            .eq("id", postId)
+            .order("created_at", { ascending: false, foreignTable: "comments" })
+            .single();
+
+        if (error) {
+            console.log("Post details error: ", error);
+            return { success: false, msg: "Could not fetch posts" };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.log("Post details error: ", error);
+        return { success: false, msg: "Could not fetch posts" };
+    }
+};
+
+export const createComment = async (comment) => {
+    try {
+        const { data, error } = await supabase
+            .from("comments")
+            .insert(comment)
+            .select()
+            .single();
+
+        if (error) {
+            console.log("Error in commenting: ", error);
+            return { success: false, msg: "Could not comment" };
+        }
+
+        return { success: true, data: data };
+    } catch (error) {
+        console.log("Error in commenting: ", error);
+        return { success: false, msg: "Could not comment" };
     }
 };

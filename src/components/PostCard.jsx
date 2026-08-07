@@ -54,7 +54,13 @@ const PostVideo = ({ uri }) => {
     );
 };
 
-const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
+const PostCard = ({
+    item,
+    currentUser,
+    router,
+    hasShadow = true,
+    showMoreIcon = true,
+}) => {
     const shadowStyles = {
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
@@ -70,6 +76,7 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
     }, []);
 
     const openPostDetails = () => {
+        if (!showMoreIcon) return null;
         router.push({ pathname: "postDetails", params: { postId: item?.id } });
     };
 
@@ -130,14 +137,16 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
                     </View>
                 </View>
 
-                <TouchableOpacity onPress={openPostDetails}>
-                    <Icon
-                        name="options"
-                        size={hp(3.4)}
-                        strokeWidth={1}
-                        color={theme.colors.text}
-                    />
-                </TouchableOpacity>
+                {showMoreIcon && (
+                    <TouchableOpacity onPress={openPostDetails}>
+                        <Icon
+                            name="options"
+                            size={hp(3.4)}
+                            strokeWidth={1}
+                            color={theme.colors.text}
+                        />
+                    </TouchableOpacity>
+                )}
             </View>
 
             <View style={styles.content}>
@@ -191,7 +200,7 @@ const PostCard = ({ item, currentUser, router, hasShadow = true }) => {
                             color={theme.colors.textLight}
                         />
                     </TouchableOpacity>
-                    <Text style={styles.count}>{0}</Text>
+                    <Text style={styles.count}>{item?.comments[0]?.count}</Text>
                 </View>
 
                 <View style={styles.footerButton}>
