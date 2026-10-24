@@ -44,3 +44,6 @@ example
 /android
 
 g.sh
+
+.idea
+.idea/caches/deviceStreaming.xml

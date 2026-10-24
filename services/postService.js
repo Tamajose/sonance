@@ -139,3 +139,41 @@ export const createComment = async (comment) => {
         return { success: false, msg: "Could not comment" };
     }
 };
+
+export const removeComment = async (commentId) => {
+    try {
+        const { error } = await supabase
+            .from("comments")
+            .delete()
+            .eq("id", commentId);
+
+        if (error) {
+            console.log("Error in deleting comment: ", error);
+            return { success: false, msg: "Could not delete comment" };
+        }
+
+        return { success: true, data: { commentId } };
+    } catch (error) {
+        console.log("Error in deleting comment: ", error);
+        return { success: false, msg: "Could not delete comment" };
+    }
+};
+
+export const removePost = async (postId) => {
+    try {
+        const { error } = await supabase
+            .from("posts")
+            .delete()
+            .eq("id", postId);
+
+        if (error) {
+            console.log("Error in deleting post: ", error);
+            return { success: false, msg: "Could not delete post" };
+        }
+
+        return { success: true, data: { postId } };
+    } catch (error) {
+        console.log("Error in deleting post: ", error);
+        return { success: false, msg: "Could not delete post" };
+    }
+};
