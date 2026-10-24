@@ -25,7 +25,7 @@ const Home = () => {
     const getPosts = async () => {
         if (!hasMore) return null;
 
-        limit += 4;
+        limit += 10;
 
         let res = await fetchPosts(limit);
         if (res.success) {

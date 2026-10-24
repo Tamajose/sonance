@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
     Alert,
+    FlatList,
     Platform,
     Pressable,
     StyleSheet,
@@ -10,20 +12,39 @@ import {
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
+import { fetchPosts } from "../../../services/postService";
 import Avatar from "../../components/Avatar";
 import Header from "../../components/Header";
+import Loading from "../../components/Loading";
+import PostCard from "../../components/PostCard";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 
+let limit = 0;
+
 const Profile = () => {
     const { user, setAuth } = useAuth();
     const router = useRouter();
+    const [posts, setPosts] = useState([]);
+    const [hasMore, setHasMore] = useState(true);
 
     const onLogout = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) console.log(error);
+    };
+
+    const getPosts = async () => {
+        if (!hasMore) return null;
+
+        limit += 10;
+
+        let res = await fetchPosts(limit, user.id);
+        if (res.success) {
+            if (posts.length === res.data.length) setHasMore(false);
+            setPosts(res.data);
+        }
     };
 
     const handleLogout = async () => {
@@ -49,10 +70,42 @@ const Profile = () => {
     };
     return (
         <ScreenWrapper bg="white">
-            <UserHeader
-                user={user}
-                router={router}
-                handleLogout={handleLogout}
+            <FlatList
+                data={posts}
+                ListHeaderComponent={
+                    <UserHeader
+                        user={user}
+                        router={router}
+                        handleLogout={handleLogout}
+                    />
+                }
+                ListHeaderComponentStyle={{ marginBottom: 30 }}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listStyle}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                    <PostCard item={item} currentUser={user} router={router} />
+                )}
+                onEndReached={() => {
+                    getPosts();
+                    console.log("Bottom reached");
+                }}
+                onEndReachedThreshold={0}
+                ListFooterComponent={
+                    hasMore ? (
+                        <View
+                            style={{
+                                marginVertical: posts.length === 0 ? 100 : 30,
+                            }}
+                        >
+                            <Loading />
+                        </View>
+                    ) : (
+                        <View style={{ marginVertical: 30 }}>
+                            <Text style={styles.noPosts}>All Caught Up!</Text>
+                        </View>
+                    )
+                }
             />
         </ScreenWrapper>
     );
