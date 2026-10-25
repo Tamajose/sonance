@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
+import { createNotification } from "../../../services/notificationService";
 import {
     createComment,
     fetchPostDetails,
@@ -89,6 +90,18 @@ const PostDetails = () => {
         let res = await createComment(data);
         setLoading(false);
         if (res.success) {
+            if (user.id != post.userId) {
+                let notify = {
+                    senderId: user.id,
+                    receiverId: post.userId,
+                    title: "commented on your post",
+                    data: JSON.stringify({
+                        postId: post.id,
+                        commentId: res?.data?.id,
+                    }),
+                };
+                createNotification(notify);
+            }
             inputRef?.current?.clear();
             commentRef.current = "";
         } else {
