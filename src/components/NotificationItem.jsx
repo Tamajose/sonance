@@ -7,7 +7,7 @@ import moment from "moment";
 const NotificationItem = ({ item, router }) => {
     const handleClick = () => {
         let { postId, commentId } = JSON.parse(item?.data);
-        router.push({ pathName: "postDetails", params: { postId, commentId } });
+        router.push({ pathname: "postDetails", params: { postId, commentId } });
     };
 
     const createdAt = moment(item?.created_at).format("MMM d");
