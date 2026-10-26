@@ -5,7 +5,12 @@ import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Avatar from "./Avatar";
 
-const CommentItem = ({ item, canDelete = false, onDelete = () => {} }) => {
+const CommentItem = ({
+    item,
+    canDelete = false,
+    onDelete = () => {},
+    highlight = false,
+}) => {
     const createdAt = moment(item?.created_at).format("MMM d");
 
     const handleDelete = () => {
@@ -30,7 +35,7 @@ const CommentItem = ({ item, canDelete = false, onDelete = () => {} }) => {
     return (
         <View style={styles.container}>
             <Avatar uri={item?.user?.image} />
-            <View style={styles.content}>
+            <View style={[styles.content, highlight && styles.highlight]}>
                 <View
                     style={{
                         flexDirection: "row",

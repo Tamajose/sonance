@@ -27,7 +27,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 
 const PostDetails = () => {
-    const { postId } = useLocalSearchParams();
+    const { postId, commentId } = useLocalSearchParams();
     const { user } = useAuth();
     const router = useRouter();
     const [startLoading, setStartLoading] = useState(true);

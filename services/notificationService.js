@@ -24,7 +24,7 @@ export const fetchNotifications = async (receiverId) => {
     try {
         const { data, error } = await supabase
             .from("notifications")
-            .select(`*, sender: senderId(id, name, images)`)
+            .select(`*, sender: senderId(id, name, image)`)
             .eq("receiverId", receiverId)
             .order("created_at", { ascending: false });
 
