@@ -1,8 +1,28 @@
 import { supabase } from "../lib/supabase";
+import {
+    analyzeContent,
+    embedText,
+    moderateContent,
+    stripHtml,
+} from "./aiService";
 import { uploadFile } from "./imageService";
 
 export const createOrUpdatePost = async (post) => {
     try {
+        const text = stripHtml(post.body);
+        const isLocalImage =
+            post.file &&
+            typeof post.file == "object" &&
+            post.file.type == "image";
+        const imageBase64 = isLocalImage ? post.file.base64 : undefined;
+
+        if (!(await moderateContent({ text, imageBase64 }))) {
+            return {
+                success: false,
+                msg: "This post violates community guidelines",
+            };
+        }
+
         if (post.file && typeof post.file == "object") {
             let isImage = post?.file?.type == "image";
             let folderName = isImage ? "postImages" : "postVideos";
@@ -16,6 +36,17 @@ export const createOrUpdatePost = async (post) => {
                 return fileResult;
             }
         }
+
+        if (!post.tags || !post.tags.length) {
+            const meta = await analyzeContent({ text, imageBase64 });
+            if (meta.success) {
+                post.tags = meta.data.tags;
+                post.caption = meta.data.caption;
+            }
+        }
+        const embedding = await embedText(text || post.caption || "");
+        if (embedding) post.embedding = JSON.stringify(embedding);
+        delete post.caption;
 
         const { data, error } = await supabase
             .from("posts")
@@ -139,6 +170,12 @@ export const fetchPostDetails = async (postId) => {
 };
 
 export const createComment = async (comment) => {
+    if (!(await moderateContent({ text: comment.text }))) {
+        return {
+            success: false,
+            msg: "This comment violates community guidelines",
+        };
+    }
     try {
         const { data, error } = await supabase
             .from("comments")
@@ -193,5 +230,71 @@ export const removePost = async (postId) => {
     } catch (error) {
         console.log("Error in deleting post: ", error);
         return { success: false, msg: "Could not delete post" };
+    }
+};
+
+const fetchByIds = async (ids) => {
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .select(
+                `*, user: users (id, name, image), postLikes(*), comments(count)`,
+            )
+            .in("id", ids);
+
+        if (error) {
+            console.log("Error in fetching posts by id: ", error);
+            return { success: false, msg: "Could not fetch posts" };
+        }
+
+        const order = new Map(ids.map((id, i) => [id, i]));
+        data.sort((a, b) => order.get(a.id) - order.get(b.id));
+        return { success: true, data: data };
+    } catch (error) {
+        console.log("Error in fetching posts by id: ", error);
+        return { success: false, msg: "Could not fetch posts" };
+    }
+};
+
+export const searchPosts = async (query) => {
+    try {
+        const embedding = await embedText(query);
+        if (!embedding) return { success: false, msg: "Search unavailable" };
+
+        const { data, error } = await supabase.rpc("match_posts", {
+            query_embedding: JSON.stringify(embedding),
+            match_count: 10,
+        });
+
+        if (error) {
+            console.log("Error in searching posts: ", error);
+            return { success: false, msg: "Could not search posts" };
+        }
+
+        if (!data.length) return { success: true, data: [] };
+        return fetchByIds(data.map((p) => p.id));
+    } catch (error) {
+        console.log("Error in searching posts: ", error);
+        return { success: false, msg: "Could not search posts" };
+    }
+};
+
+export const fetchRecommendedPosts = async (userId, limit = 10) => {
+    try {
+        const { data, error } = await supabase.rpc("recommended_posts", {
+            uid: userId,
+            lim: limit,
+        });
+
+        if (error) {
+            console.log("Error in fetching recommended posts: ", error);
+            return { success: false, msg: "Could not fetch posts" };
+        }
+
+        if (!data.length) return { success: true, data: [] };
+        return fetchByIds(data.map((p) => p.id));
+    } catch (error) {
+        console.log("Error in fetching recommended posts: ", error);
+        return { success: false, msg: "Could not fetch posts" };
     }
 };

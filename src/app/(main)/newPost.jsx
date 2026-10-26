@@ -13,6 +13,7 @@ import {
     View,
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
+import { analyzeContent, stripHtml } from "../../../services/aiService";
 import { getSupabaseFileUrl } from "../../../services/imageService";
 import { createOrUpdatePost } from "../../../services/postService";
 import Avatar from "../../components/Avatar";
@@ -49,6 +50,7 @@ const NewPost = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState(null);
+    const [tags, setTags] = useState([]);
 
     useEffect(() => {
         if (post && post.id) {
@@ -66,6 +68,7 @@ const NewPost = () => {
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.7,
+            base64: true,
         };
 
         if (!isImage) {
@@ -120,6 +123,7 @@ const NewPost = () => {
             userId: user?.id,
         };
 
+        if (tags.length) data.tags = tags;
         if (post && post.id) data.id = post.id;
 
         setLoading(true);
@@ -134,6 +138,24 @@ const NewPost = () => {
         } else {
             Alert.alert("Post", res.msg);
         }
+    };
+
+    const onGenerateCaption = async () => {
+        if (!isLocalFile(file) || file.type !== "image") {
+            Alert.alert("Caption", "Pick a new image first");
+            return;
+        }
+        setLoading(true);
+        const res = await analyzeContent({
+            text: stripHtml(bodyRef.current),
+            imageBase64: file.base64,
+        });
+        setLoading(false);
+        if (!res.success)
+            return Alert.alert("Caption", "Could not generate caption");
+        bodyRef.current = res.data.caption;
+        editorRef.current?.setContentHTML(res.data.caption);
+        setTags(res.data.tags);
     };
 
     console.log("File Uri: ", getFileUri(file));
@@ -186,6 +208,28 @@ const NewPost = () => {
                         </View>
                     )}
 
+                    {isLocalFile(file) && file.type === "image" && (
+                        <TouchableOpacity
+                            style={styles.captionButton}
+                            onPress={onGenerateCaption}
+                            disabled={loading}
+                        >
+                            <Text style={styles.captionButtonText}>
+                                Generate caption
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {tags.length > 0 && (
+                        <View style={styles.tags}>
+                            {tags.map((tag) => (
+                                <Text key={tag} style={styles.tag}>
+                                    #{tag}
+                                </Text>
+                            ))}
+                        </View>
+                    )}
+
                     <View style={styles.media}>
                         <Text style={styles.addImageText}>
                             Add to your post
@@ -223,6 +267,29 @@ const NewPost = () => {
 export default NewPost;
 
 const styles = StyleSheet.create({
+    captionButton: {
+        alignSelf: "flex-start",
+        paddingVertical: 8,
+        paddingHorizontal: 14,
+        borderRadius: theme.radius.xl,
+        borderCurve: "continuous",
+        borderWidth: 1,
+        borderColor: theme.colors.primary,
+    },
+    captionButtonText: {
+        color: theme.colors.primary,
+        fontSize: hp(1.8),
+        fontWeight: theme.fonts.semiBold,
+    },
+    tags: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+    },
+    tag: {
+        color: theme.colors.textLight,
+        fontSize: hp(1.7),
+    },
     container: {
         flex: 1,
         //backgroundColor: 'red',

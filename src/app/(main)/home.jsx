@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
-import { fetchPosts } from "../../../services/postService";
+import {
+    fetchPosts,
+    fetchRecommendedPosts,
+} from "../../../services/postService";
 import { getUserData } from "../../../services/userService";
 import Avatar from "../../components/Avatar";
 import Loading from "../../components/Loading";
@@ -22,17 +25,35 @@ const Home = () => {
     const [posts, setPosts] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [notificationCount, setNotificationCount] = useState(0);
+    const [feed, setFeed] = useState("latest");
+
+    const loadFeed = (mode, count) =>
+        mode === "forYou"
+            ? fetchRecommendedPosts(user.id, count)
+            : fetchPosts(count);
 
     const getPosts = async () => {
         if (!hasMore) return null;
 
         limit += 10;
 
-        let res = await fetchPosts(limit);
+        let res = await loadFeed(feed, limit);
         if (res.success) {
             if (posts.length === res.data.length) setHasMore(false);
             setPosts(res.data);
         }
+    };
+
+    const switchFeed = async (mode) => {
+        if (mode === feed) return;
+
+        limit = 10;
+        setFeed(mode);
+        setHasMore(true);
+        setPosts([]);
+
+        let res = await loadFeed(mode, limit);
+        if (res.success) setPosts(res.data);
     };
 
     const handlePostEvents = async (payload) => {
@@ -142,6 +163,36 @@ const Home = () => {
                         </Pressable>
                     </View>
                 </View>
+                <View style={styles.tabs}>
+                    {[
+                        ["latest", "Latest"],
+                        ["forYou", "For you"],
+                    ].map(([mode, label]) => (
+                        <Pressable
+                            key={mode}
+                            onPress={() => switchFeed(mode)}
+                            style={[
+                                styles.tab,
+                                feed === mode && styles.tabActive,
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.tabText,
+                                    feed === mode && styles.tabTextActive,
+                                ]}
+                            >
+                                {label}
+                            </Text>
+                        </Pressable>
+                    ))}
+                    <Pressable
+                        onPress={() => router.push("search")}
+                        style={styles.tab}
+                    >
+                        <Text style={styles.tabText}>Search</Text>
+                    </Pressable>
+                </View>
                 <FlatList
                     data={posts}
                     showsVerticalScrollIndicator={false}
@@ -215,6 +266,31 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         gap: 18,
+    },
+    tabs: {
+        flexDirection: "row",
+        gap: 10,
+        marginHorizontal: wp(4),
+    },
+    tab: {
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderRadius: theme.radius.xl,
+        borderCurve: "continuous",
+        borderWidth: 1,
+        borderColor: theme.colors.gray,
+    },
+    tabActive: {
+        backgroundColor: theme.colors.primary,
+        borderColor: theme.colors.primary,
+    },
+    tabText: {
+        fontSize: hp(1.8),
+        color: theme.colors.text,
+    },
+    tabTextActive: {
+        color: "white",
+        fontWeight: theme.fonts.semiBold,
     },
     listStyle: {
         paddingTop: 20,
