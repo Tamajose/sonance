@@ -59,6 +59,7 @@ const Home = () => {
     const handlePostEvents = async (payload) => {
         if (payload.eventType == "INSERT" && payload?.new?.id) {
             let newPost = { ...payload.new };
+            delete newPost.embedding;
             let res = await getUserData(newPost.userId);
             newPost.likes = [];
             newPost.comments = [{ count: 0 }];
@@ -105,7 +106,7 @@ const Home = () => {
             .subscribe();
 
         let notificationChannel = supabase
-            .channel("notifications")
+            .channel("notifications_" + Date.now())
             .on(
                 "postgres_changes",
                 {

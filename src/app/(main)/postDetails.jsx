@@ -53,7 +53,7 @@ const PostDetails = () => {
 
     useEffect(() => {
         let commentChannel = supabase
-            .channel("comments")
+            .channel("comments_" + Date.now())
             .on(
                 "postgres_changes",
                 {

@@ -7,6 +7,8 @@ import {
 } from "./aiService";
 import { uploadFile } from "./imageService";
 
+const POST_COLUMNS = "id, created_at, body, file, userId, tags";
+
 export const createOrUpdatePost = async (post) => {
     try {
         const text = stripHtml(post.body);
@@ -72,7 +74,7 @@ export const fetchPosts = async (limit = 10, userId) => {
             const { data, error } = await supabase
                 .from("posts")
                 .select(
-                    `*, user: users (id, name, image), postLikes(*), comments(count)`,
+                    `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
                 )
                 .order("created_at", { ascending: false })
                 .eq("userId", userId)
@@ -88,7 +90,7 @@ export const fetchPosts = async (limit = 10, userId) => {
             const { data, error } = await supabase
                 .from("posts")
                 .select(
-                    `*, user: users (id, name, image), postLikes(*), comments(count)`,
+                    `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
                 )
                 .order("created_at", { ascending: false })
                 .limit(limit);
@@ -151,7 +153,7 @@ export const fetchPostDetails = async (postId) => {
         const { data, error } = await supabase
             .from("posts")
             .select(
-                `*, user: users (id, name, image), postLikes(*), comments(*, user: users(id, name, image))`,
+                `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(*, user: users(id, name, image))`,
             )
             .eq("id", postId)
             .order("created_at", { ascending: false, foreignTable: "comments" })
@@ -238,7 +240,7 @@ const fetchByIds = async (ids) => {
         const { data, error } = await supabase
             .from("posts")
             .select(
-                `*, user: users (id, name, image), postLikes(*), comments(count)`,
+                `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
             )
             .in("id", ids);
 

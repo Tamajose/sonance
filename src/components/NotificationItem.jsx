@@ -10,7 +10,7 @@ const NotificationItem = ({ item, router }) => {
         router.push({ pathname: "postDetails", params: { postId, commentId } });
     };
 
-    const createdAt = moment(item?.created_at).format("MMM d");
+    const createdAt = moment(item?.created_at).format("MMM D");
 
     return (
         <TouchableOpacity style={styles.container} onPress={handleClick}>

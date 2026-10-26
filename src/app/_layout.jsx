@@ -22,16 +22,27 @@ const MainLayout = () => {
     };
 
     useEffect(() => {
-        supabase.auth.onAuthStateChange((_event, session) => {
+        let currentUserId = null;
+
+        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
-                setAuth(session?.user);
-                updateUserData(session?.user, session?.user?.email);
+                if (session.user.id === currentUserId) return;
+                currentUserId = session.user.id;
+
+                setAuth(session.user);
+                setTimeout(
+                    () => updateUserData(session.user, session.user.email),
+                    0,
+                );
                 router.replace("/home");
             } else {
+                currentUserId = null;
                 setAuth(null);
                 router.replace("/welcome");
             }
         });
+
+        return () => data.subscription.unsubscribe();
     }, []);
 
     return (
