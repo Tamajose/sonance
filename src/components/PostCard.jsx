@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView } from "expo-video";
 import moment from "moment/moment";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Alert,
     Share,
@@ -18,25 +18,29 @@ import { theme } from "../constants/theme";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
 import Avatar from "./Avatar";
 import Loading from "./Loading";
+import { useTheme, useThemedStyles } from "../contexts/ThemeContext";
 
-const textStyle = {
-    color: theme.colors.dark,
-    fontSize: hp(1.75),
-};
+const getTagsStyles = (colors) => {
+    const textStyle = {
+        color: colors.dark,
+        fontSize: hp(1.75),
+    };
 
-const tagsStyles = {
-    div: textStyle,
-    p: textStyle,
-    ol: textStyle,
-    h1: {
-        color: theme.colors.dark,
-    },
-    h4: {
-        color: theme.colors.dark,
-    },
+    return {
+        div: textStyle,
+        p: textStyle,
+        ol: textStyle,
+        h1: {
+            color: colors.dark,
+        },
+        h4: {
+            color: colors.dark,
+        },
+    };
 };
 
 const PostVideo = ({ uri }) => {
+    const { styles } = useThemedStyles(createStyles);
     const player = useVideoPlayer(uri, (player) => {
         player.loop = true;
         player.play();
@@ -64,6 +68,17 @@ const PostCard = ({
     onDelete = () => {},
     onEdit = () => {},
 }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+    const { isDark } = useTheme();
+    const tagsStyles = useMemo(() => getTagsStyles(colors), [colors]);
+    // Applies to every tag and to plain-text bodies (e.g. AI captions)
+    const baseStyle = useMemo(
+        () => ({ color: colors.dark, fontSize: hp(1.75) }),
+        [colors],
+    );
+    // Outline icons are drawn thin; thicken them on dark so they stay visible
+    const outlineStroke = isDark ? 1.6 : 1;
+
     const shadowStyles = {
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.06,
@@ -164,8 +179,8 @@ const PostCard = ({
                         <Icon
                             name="options"
                             size={hp(3.4)}
-                            strokeWidth={1}
-                            color={theme.colors.text}
+                            strokeWidth={outlineStroke}
+                            color={isDark ? colors.icon : colors.text}
                         />
                     </TouchableOpacity>
                 )}
@@ -176,14 +191,14 @@ const PostCard = ({
                             <Icon
                                 name="edit"
                                 size={hp(2.5)}
-                                color={theme.colors.text}
+                                color={colors.text}
                             />
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handlePostDelete}>
                             <Icon
                                 name="delete"
                                 size={hp(2.5)}
-                                color={theme.colors.rose}
+                                color={colors.rose}
                             />
                         </TouchableOpacity>
                     </View>
@@ -196,6 +211,7 @@ const PostCard = ({
                         <RenderHTML
                             contentWidth={wp(100)}
                             source={{ html: item?.body }}
+                            baseStyle={baseStyle}
                             tagsStyles={tagsStyles}
                         />
                     )}
@@ -221,12 +237,8 @@ const PostCard = ({
                         <Icon
                             name="heart"
                             size={24}
-                            fill={liked ? theme.colors.rose : "transparent"}
-                            color={
-                                liked
-                                    ? theme.colors.rose
-                                    : theme.colors.textLight
-                            }
+                            fill={liked ? colors.rose : "transparent"}
+                            color={liked ? colors.rose : colors.icon}
                         />
                     </TouchableOpacity>
                     <Text style={styles.count}>{likes?.length}</Text>
@@ -237,8 +249,8 @@ const PostCard = ({
                         <Icon
                             name="comment"
                             size={24}
-                            strokeWidth={1}
-                            color={theme.colors.textLight}
+                            strokeWidth={outlineStroke}
+                            color={colors.icon}
                         />
                     </TouchableOpacity>
                     <Text style={styles.count}>{item?.comments[0]?.count}</Text>
@@ -252,8 +264,8 @@ const PostCard = ({
                             <Icon
                                 name="share"
                                 size={24}
-                                strokeWidth={1}
-                                color={theme.colors.textLight}
+                                strokeWidth={outlineStroke}
+                                color={colors.icon}
                             />
                         </TouchableOpacity>
                     )}
@@ -265,69 +277,70 @@ const PostCard = ({
 
 export default PostCard;
 
-const styles = StyleSheet.create({
-    container: {
-        gap: 10,
-        marginBottom: 15,
-        borderRadius: theme.radius.xxl * 1.1,
-        borderCurve: "continuous",
-        padding: 10,
-        paddingVertical: 12,
-        backgroundColor: "white",
-        borderWidth: 0.5,
-        borderColor: theme.colors.gray,
-        shadowColor: "#000",
-    },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-    userInfo: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    username: {
-        fontSize: hp(1.7),
-        color: theme.colors.textDark,
-        fontWeight: theme.fonts.medium,
-    },
-    postTime: {
-        fontSize: hp(1.4),
-        color: theme.colors.textLight,
-        fontWeight: theme.fonts.medium,
-    },
-    content: {
-        gap: 10,
-        // marginBottom: 10,
-    },
-    postMedia: {
-        height: hp(40),
-        width: "100%",
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-    },
-    postBody: {
-        marginLeft: 5,
-    },
-    footer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 15,
-    },
-    footerButton: {
-        marginLeft: 5,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-    },
-    actions: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 18,
-    },
-    count: {
-        color: theme.colors.text,
-        fontSize: hp(1.8),
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            gap: 10,
+            marginBottom: 15,
+            borderRadius: theme.radius.xxl * 1.1,
+            borderCurve: "continuous",
+            padding: 10,
+            paddingVertical: 12,
+            backgroundColor: colors.card,
+            borderWidth: 0.5,
+            borderColor: colors.gray,
+            shadowColor: "#000",
+        },
+        header: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+        },
+        userInfo: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+        },
+        username: {
+            fontSize: hp(1.7),
+            color: colors.textDark,
+            fontWeight: theme.fonts.medium,
+        },
+        postTime: {
+            fontSize: hp(1.4),
+            color: colors.textLight,
+            fontWeight: theme.fonts.medium,
+        },
+        content: {
+            gap: 10,
+            // marginBottom: 10,
+        },
+        postMedia: {
+            height: hp(40),
+            width: "100%",
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+        },
+        postBody: {
+            marginLeft: 5,
+        },
+        footer: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 15,
+        },
+        footerButton: {
+            marginLeft: 5,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+        },
+        actions: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 18,
+        },
+        count: {
+            color: colors.text,
+            fontSize: hp(1.8),
+        },
+    });

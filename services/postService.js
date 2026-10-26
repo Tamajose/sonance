@@ -300,3 +300,26 @@ export const fetchRecommendedPosts = async (userId, limit = 10) => {
         return { success: false, msg: "Could not fetch posts" };
     }
 };
+
+export const fetchProfileStats = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from("posts")
+            .select("id, postLikes(count)")
+            .eq("userId", userId);
+
+        if (error) {
+            console.log("Error in fetching profile stats: ", error);
+            return { success: false, msg: "Could not fetch profile stats" };
+        }
+
+        const likes = data.reduce(
+            (total, post) => total + (post.postLikes?.[0]?.count ?? 0),
+            0,
+        );
+        return { success: true, data: { posts: data.length, likes } };
+    } catch (error) {
+        console.log("Error in fetching profile stats: ", error);
+        return { success: false, msg: "Could not fetch profile stats" };
+    }
+};

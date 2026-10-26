@@ -21,8 +21,10 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
 
 const EditProfile = () => {
+    const { styles, colors } = useThemedStyles(createStyles);
     const { user: currentUser, setUserData } = useAuth();
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -116,7 +118,7 @@ const EditProfile = () => {
                         <Text
                             style={{
                                 fontSize: hp(1.5),
-                                color: theme.colors.text,
+                                color: colors.text,
                             }}
                         >
                             Please enter your profile details
@@ -169,55 +171,56 @@ const EditProfile = () => {
 
 export default EditProfile;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: wp(4),
-    },
-    avatarContainer: {
-        height: hp(14),
-        width: hp(14),
-        alignSelf: "center",
-    },
-    avatar: {
-        width: "100%",
-        height: "100%",
-        borderRadius: theme.radius.xxl * 1.8,
-        borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: theme.colors.darkLight,
-    },
-    cameraIcon: {
-        position: "absolute",
-        bottom: 0,
-        right: -10,
-        padding: 8,
-        borderRadius: 50,
-        backgroundColor: "white",
-        shadowColor: theme.colors.textLight,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-        elevation: 7,
-    },
-    form: {
-        gap: 18,
-        marginTop: 20,
-    },
-    input: {
-        flexDirection: "row",
-        borderWidth: 0.4,
-        borderColor: theme.colors.text,
-        borderRadius: theme.radius.xxl,
-        borderCurve: "continuous",
-        padding: 17,
-        paddingHorizontal: 20,
-        gap: 15,
-    },
-    bio: {
-        flexDirection: "row",
-        height: hp(15),
-        alignItems: "flex-start",
-        paddingVertical: 15,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            paddingHorizontal: wp(4),
+        },
+        avatarContainer: {
+            height: hp(14),
+            width: hp(14),
+            alignSelf: "center",
+        },
+        avatar: {
+            width: "100%",
+            height: "100%",
+            borderRadius: theme.radius.xxl * 1.8,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: colors.darkLight,
+        },
+        cameraIcon: {
+            position: "absolute",
+            bottom: 0,
+            right: -10,
+            padding: 8,
+            borderRadius: 50,
+            backgroundColor: colors.card,
+            shadowColor: colors.textLight,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.4,
+            shadowRadius: 5,
+            elevation: 7,
+        },
+        form: {
+            gap: 18,
+            marginTop: 20,
+        },
+        input: {
+            flexDirection: "row",
+            borderWidth: 0.4,
+            borderColor: colors.text,
+            borderRadius: theme.radius.xxl,
+            borderCurve: "continuous",
+            padding: 17,
+            paddingHorizontal: 20,
+            gap: 15,
+        },
+        bio: {
+            flexDirection: "row",
+            height: hp(15),
+            alignItems: "flex-start",
+            paddingVertical: 15,
+        },
+    });

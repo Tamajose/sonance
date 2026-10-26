@@ -1,5 +1,7 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { Image } from "expo-image";
+import { useFocusEffect, useRouter } from "expo-router";
+import moment from "moment";
+import { useCallback, useRef, useState } from "react";
 import {
     Alert,
     FlatList,
@@ -8,57 +10,85 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
-import { fetchPosts } from "../../../services/postService";
+import { getSupabaseFileUrl } from "../../../services/imageService";
+import { fetchPosts, fetchProfileStats } from "../../../services/postService";
 import Avatar from "../../components/Avatar";
-import Header from "../../components/Header";
 import Loading from "../../components/Loading";
-import PostCard from "../../components/PostCard";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
-import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
+import { hp, stripHtmlTags, wp } from "../../helpers/common";
 
-let limit = 0;
+const PAGE_SIZE = 18;
+const GRID_COLUMNS = 3;
+const GRID_GAP = 2;
 
 const Profile = () => {
-    const { user, setAuth } = useAuth();
+    const { styles } = useThemedStyles(createStyles);
+    const { user } = useAuth();
     const router = useRouter();
+    const { width } = useWindowDimensions();
+
+    const limitRef = useRef(0);
+    const loadingMoreRef = useRef(false);
     const [posts, setPosts] = useState([]);
+    const [stats, setStats] = useState(null);
     const [hasMore, setHasMore] = useState(true);
+    const [loaded, setLoaded] = useState(false);
+
+    const tileSize = Math.floor(
+        (width - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
+    );
+
+    const loadPosts = async (count) => {
+        const res = await fetchPosts(count, user.id);
+        if (res.success) {
+            setPosts(res.data);
+            setHasMore(res.data.length >= count);
+        }
+        setLoaded(true);
+    };
+
+    // Reload whenever the screen regains focus so deletes, edits and likes show up
+    useFocusEffect(
+        useCallback(() => {
+            if (!user?.id) return;
+            limitRef.current = Math.max(limitRef.current, PAGE_SIZE);
+            loadPosts(limitRef.current);
+            fetchProfileStats(user.id).then((res) => {
+                if (res.success) setStats(res.data);
+            });
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [user?.id]),
+    );
+
+    const loadMore = async () => {
+        if (!hasMore || loadingMoreRef.current || !loaded) return;
+        loadingMoreRef.current = true;
+        limitRef.current += PAGE_SIZE;
+        await loadPosts(limitRef.current);
+        loadingMoreRef.current = false;
+    };
 
     const onLogout = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) console.log(error);
     };
 
-    const getPosts = async () => {
-        if (!hasMore) return null;
-
-        limit += 10;
-
-        let res = await fetchPosts(limit, user.id);
-        if (res.success) {
-            if (posts.length === res.data.length) setHasMore(false);
-            setPosts(res.data);
-        }
-    };
-
-    const handleLogout = async () => {
+    const handleLogout = () => {
         if (Platform.OS === "web") {
             if (window.confirm("Are you sure you want to log out?")) {
                 onLogout();
             }
         } else {
             Alert.alert("Confirm", "Are you sure you want to log out?", [
-                {
-                    text: "Cancel",
-                    onPress: () => console.log("Modal cancelled"),
-                    style: "cancel",
-                },
+                { text: "Cancel", style: "cancel" },
                 {
                     text: "Log Out",
                     onPress: () => onLogout(),
@@ -66,43 +96,46 @@ const Profile = () => {
                 },
             ]);
         }
-        return;
     };
+
+    const openPost = (item) =>
+        router.push({ pathname: "postDetails", params: { postId: item.id } });
+
     return (
-        <ScreenWrapper bg="white">
+        <ScreenWrapper>
             <FlatList
                 data={posts}
+                numColumns={GRID_COLUMNS}
+                columnWrapperStyle={{ gap: GRID_GAP }}
                 ListHeaderComponent={
-                    <UserHeader
+                    <ProfileHeader
                         user={user}
+                        stats={stats}
                         router={router}
                         handleLogout={handleLogout}
                     />
                 }
-                ListHeaderComponentStyle={{ marginBottom: 30 }}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listStyle}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <PostCard item={item} currentUser={user} router={router} />
+                    <PostTile
+                        item={item}
+                        size={tileSize}
+                        onPress={() => openPost(item)}
+                    />
                 )}
-                onEndReached={() => {
-                    getPosts();
-                    console.log("Bottom reached");
-                }}
-                onEndReachedThreshold={0}
-                ListFooterComponent={
-                    hasMore ? (
-                        <View
-                            style={{
-                                marginVertical: posts.length === 0 ? 100 : 30,
-                            }}
-                        >
-                            <Loading />
+                onEndReached={loadMore}
+                onEndReachedThreshold={0.4}
+                ListEmptyComponent={
+                    loaded ? (
+                        <View style={styles.empty}>
+                            <Icon name="image" size={hp(5)} strokeWidth={1.4} />
+                            <Text style={styles.emptyText}>No posts yet</Text>
                         </View>
                     ) : (
-                        <View style={{ marginVertical: 30 }}>
-                            <Text style={styles.noPosts}>All Caught Up!</Text>
+                        <View style={{ marginVertical: 40 }}>
+                            <Loading />
                         </View>
                     )
                 }
@@ -111,148 +144,327 @@ const Profile = () => {
     );
 };
 
-const UserHeader = ({ user, router, handleLogout }) => {
+const Stat = ({ value, label }) => {
+    const { styles } = useThemedStyles(createStyles);
+
     return (
-        <View
-            style={{
-                flex: 1,
-                backgroundColor: "white",
-                paddingHorizontal: wp(4),
-            }}
-        >
-            <View>
-                <Header title="Profile" mb={30} />
-                <TouchableOpacity
-                    style={styles.logoutButton}
-                    onPress={handleLogout}
-                >
-                    <Icon name="logout" color={theme.colors.rose} />
-                </TouchableOpacity>
+        <View style={styles.stat}>
+            <Text style={styles.statValue}>{value ?? "–"}</Text>
+            <Text style={styles.statLabel}>{label}</Text>
+        </View>
+    );
+};
+
+const ContactRow = ({ icon, label, value }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+
+    return (
+        <View style={styles.contactRow}>
+            <View style={styles.contactIcon}>
+                <Icon name={icon} size={hp(2.2)} color={colors.primary} />
             </View>
-            <View style={styles.container}>
-                <View style={{ gap: 15 }}>
-                    <View style={styles.avatarContainer}>
-                        <Avatar
-                            uri={user?.image}
-                            size={hp(12)}
-                            rounded={theme.radius.xxl * 1.4}
-                        />
-                        <Pressable
-                            style={styles.editIcon}
-                            onPress={() => router.push("/editProfile")}
-                        >
-                            <Icon name="edit" strokeWidth={2.5} size={20} />
-                        </Pressable>
-                    </View>
-
-                    <View style={{ alignItems: "center", gap: 4 }}>
-                        <Text style={styles.userName}>{user && user.name}</Text>
-                        <Text style={styles.infoText}>
-                            {user && user.address}
-                        </Text>
-                    </View>
-
-                    <View style={{ gap: 10 }}>
-                        <View style={styles.info}>
-                            <Icon
-                                name="mail"
-                                size={20}
-                                color={theme.colors.textLight}
-                            />
-                            <Text style={styles.infoText}>
-                                {user && user.email}
-                            </Text>
-                        </View>
-                        {user && user.phoneNumber && (
-                            <View style={styles.info}>
-                                <Icon
-                                    name="phone"
-                                    size={20}
-                                    color={theme.colors.textLight}
-                                />
-                                <Text style={styles.infoText}>
-                                    {user && user.phoneNumber}
-                                </Text>
-                            </View>
-                        )}
-                        {user && user.bio && (
-                            <View style={styles.info}>
-                                <Icon
-                                    name="bio"
-                                    size={20}
-                                    color={theme.colors.textLight}
-                                />
-                                <Text style={styles.infoText}>{user.bio}</Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.contactLabel}>{label}</Text>
+                <Text style={styles.contactValue} numberOfLines={1}>
+                    {value}
+                </Text>
             </View>
         </View>
     );
 };
 
+const ProfileHeader = ({ user, stats, router, handleLogout }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+    const avatarSize = hp(11);
+
+    return (
+        <View style={styles.header}>
+            <View style={styles.topBar}>
+                <Text style={styles.screenTitle}>Profile</Text>
+                <TouchableOpacity
+                    style={styles.logoutButton}
+                    onPress={handleLogout}
+                    accessibilityLabel="Log out"
+                >
+                    <Icon name="logout" size={hp(2.6)} color={colors.rose} />
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.identityRow}>
+                <View style={styles.avatarRing}>
+                    <Avatar
+                        uri={user?.image}
+                        size={avatarSize}
+                        rounded={avatarSize / 2}
+                    />
+                </View>
+                <View style={styles.stats}>
+                    <Stat value={stats?.posts} label="Posts" />
+                    <Stat value={stats?.likes} label="Likes" />
+                    <Stat
+                        value={
+                            user?.created_at
+                                ? moment(user.created_at).format("MMM YYYY")
+                                : null
+                        }
+                        label="Joined"
+                    />
+                </View>
+            </View>
+
+            <View style={styles.about}>
+                <Text style={styles.name}>{user?.name}</Text>
+                {!!user?.address && (
+                    <View style={styles.locationRow}>
+                        <Icon
+                            name="location"
+                            size={hp(2)}
+                            color={colors.textLight}
+                        />
+                        <Text style={styles.location}>{user.address}</Text>
+                    </View>
+                )}
+                {!!user?.bio && <Text style={styles.bio}>{user.bio}</Text>}
+            </View>
+
+            {(!!user?.email || !!user?.phoneNumber) && (
+                <View style={styles.contactCard}>
+                    {!!user?.email && (
+                        <ContactRow
+                            icon="mail"
+                            label="Email"
+                            value={user.email}
+                        />
+                    )}
+                    {!!user?.phoneNumber && (
+                        <ContactRow
+                            icon="phone"
+                            label="Phone"
+                            value={user.phoneNumber}
+                        />
+                    )}
+                </View>
+            )}
+
+            <Pressable
+                style={styles.editButton}
+                onPress={() => router.push("/editProfile")}
+            >
+                <Icon name="edit" size={hp(2.2)} color={colors.text} />
+                <Text style={styles.editButtonText}>Edit profile</Text>
+            </Pressable>
+
+            <View style={styles.gridHeader}>
+                <Icon name="image" size={hp(2.4)} color={colors.primary} />
+                <Text style={styles.gridTitle}>Posts</Text>
+            </View>
+        </View>
+    );
+};
+
+const PostTile = ({ item, size, onPress }) => {
+    const { styles } = useThemedStyles(createStyles);
+    const isImage = item?.file?.includes("postImages");
+    const isVideo = item?.file?.includes("postVideos");
+
+    return (
+        <Pressable
+            onPress={onPress}
+            style={[styles.tile, { width: size, height: size }]}
+        >
+            {isImage ? (
+                <Image
+                    source={getSupabaseFileUrl(item.file)}
+                    contentFit="cover"
+                    transition={100}
+                    style={{ flex: 1 }}
+                />
+            ) : isVideo ? (
+                <View style={styles.videoTile}>
+                    <Icon name="video" size={hp(3.6)} color="white" />
+                </View>
+            ) : (
+                <View style={styles.textTile}>
+                    <Text style={styles.textTileBody} numberOfLines={6}>
+                        {stripHtmlTags(item?.body)}
+                    </Text>
+                </View>
+            )}
+        </Pressable>
+    );
+};
+
 export default Profile;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    headerContainer: {
-        marginHorizontal: wp(4),
-        marginBottom: 20,
-    },
-    headerShape: {
-        width: wp(100),
-        height: hp(20),
-    },
-    avatarContainer: {
-        height: hp(12),
-        width: hp(12),
-        alignSelf: "center",
-    },
-    editIcon: {
-        position: "absolute",
-        bottom: 0,
-        right: -12,
-        padding: 7,
-        borderRadius: 50,
-        backgroundColor: "white",
-        shadowColor: theme.colors.textLight,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 5,
-        elevation: 7,
-    },
-    userName: {
-        fontsize: hp(3),
-        fontWeight: "500",
-        gap: 10,
-    },
-    info: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
-    infoText: {
-        fontSize: hp(1.6),
-        fontWeight: "500",
-        color: theme.colors.textLight,
-    },
-    logoutButton: {
-        position: "absolute",
-        right: 0,
-        padding: 5,
-        borderRadius: theme.radius.sm,
-        backgroundColor: "#fee2e2",
-    },
-    listStyle: {
-        paddingHorizontal: wp(4),
-        paddingBottom: 30,
-    },
-    noPosts: {
-        fontSize: hp(2),
-        textAlign: "center",
-        color: theme.colors.text,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        listStyle: {
+            paddingBottom: 20,
+            gap: GRID_GAP,
+        },
+        header: {
+            paddingHorizontal: wp(4),
+            gap: 18,
+            marginBottom: 6,
+        },
+        topBar: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+        },
+        screenTitle: {
+            fontSize: hp(3),
+            fontWeight: theme.fonts.bold,
+            color: colors.textDark,
+        },
+        logoutButton: {
+            padding: 9,
+            borderRadius: 50,
+            backgroundColor: colors.roseSoft,
+        },
+        identityRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: wp(6),
+        },
+        avatarRing: {
+            padding: 3,
+            borderRadius: 100,
+            borderWidth: 2.5,
+            borderColor: colors.primary,
+        },
+        stats: {
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-around",
+        },
+        stat: {
+            alignItems: "center",
+            gap: 2,
+        },
+        statValue: {
+            fontSize: hp(2.2),
+            fontWeight: theme.fonts.bold,
+            color: colors.textDark,
+        },
+        statLabel: {
+            fontSize: hp(1.5),
+            color: colors.textLight,
+        },
+        about: {
+            gap: 5,
+        },
+        name: {
+            fontSize: hp(2.7),
+            fontWeight: theme.fonts.bold,
+            color: colors.textDark,
+        },
+        locationRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 5,
+        },
+        location: {
+            fontSize: hp(1.7),
+            fontWeight: theme.fonts.medium,
+            color: colors.textLight,
+        },
+        bio: {
+            marginTop: 4,
+            fontSize: hp(1.75),
+            lineHeight: hp(2.6),
+            color: colors.text,
+        },
+        contactCard: {
+            gap: 14,
+            padding: 14,
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: colors.darkLight,
+            backgroundColor: colors.card,
+        },
+        contactRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+        },
+        contactIcon: {
+            height: hp(4.4),
+            width: hp(4.4),
+            borderRadius: theme.radius.md,
+            borderCurve: "continuous",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.surface,
+        },
+        contactLabel: {
+            fontSize: hp(1.4),
+            color: colors.textLight,
+        },
+        contactValue: {
+            fontSize: hp(1.8),
+            fontWeight: theme.fonts.medium,
+            color: colors.textDark,
+        },
+        editButton: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            paddingVertical: 11,
+            borderRadius: theme.radius.lg,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: colors.darkLight,
+            backgroundColor: colors.surface,
+        },
+        editButtonText: {
+            fontSize: hp(1.8),
+            fontWeight: theme.fonts.semiBold,
+            color: colors.text,
+        },
+        gridHeader: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            paddingVertical: 10,
+            borderBottomWidth: 2,
+            borderBottomColor: colors.primary,
+        },
+        gridTitle: {
+            fontSize: hp(1.9),
+            fontWeight: theme.fonts.semiBold,
+            color: colors.textDark,
+        },
+        tile: {
+            overflow: "hidden",
+            backgroundColor: colors.gray,
+        },
+        videoTile: {
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#22262D",
+        },
+        textTile: {
+            flex: 1,
+            padding: 9,
+            justifyContent: "center",
+            backgroundColor: colors.gray,
+        },
+        textTileBody: {
+            fontSize: hp(1.45),
+            color: colors.text,
+        },
+        empty: {
+            alignItems: "center",
+            gap: 10,
+            marginTop: 50,
+        },
+        emptyText: {
+            fontSize: hp(1.9),
+            color: colors.textLight,
+        },
+    });

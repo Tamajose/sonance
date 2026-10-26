@@ -25,8 +25,10 @@ import PostCard from "../../components/PostCard";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
 
 const PostDetails = () => {
+    const { styles, colors } = useThemedStyles(createStyles);
     const { postId, commentId } = useLocalSearchParams();
     const { user } = useAuth();
     const router = useRouter();
@@ -184,7 +186,7 @@ const PostDetails = () => {
                         inputRef={inputRef}
                         placeholder="Type comment"
                         onChangeText={(value) => (commentRef.current = value)}
-                        placeholderColor={theme.colors.textLight}
+                        placeholderColor={colors.textLight}
                         containerStyle={{
                             flex: 1,
                             height: hp(6.2),
@@ -203,7 +205,7 @@ const PostDetails = () => {
                         >
                             <Icon
                                 name="send"
-                                color={theme.colors.primaryDark}
+                                color={colors.primaryDark}
                             />
                         </TouchableOpacity>
                     )}
@@ -224,7 +226,7 @@ const PostDetails = () => {
 
                     {post?.comments?.length === 0 && (
                         <Text
-                            style={{ color: theme.colors.text, marginLeft: 5 }}
+                            style={{ color: colors.text, marginLeft: 5 }}
                         >
                             Be the first to comment!
                         </Text>
@@ -237,45 +239,46 @@ const PostDetails = () => {
 
 export default PostDetails;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "white",
-        paddingVertical: wp(7),
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
-    list: {
-        paddingHorizontal: wp(4),
-    },
-    sendIcon: {
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 0.8,
-        borderColor: theme.colors.primary,
-        borderRadius: theme.radius.lg,
-        borderCurve: "continuous",
-        height: hp(5.8),
-        width: hp(5.8),
-    },
-    center: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    notFound: {
-        fontSize: hp(2.5),
-        color: theme.colors.text,
-        fontWeight: theme.fonts.medium,
-    },
-    loading: {
-        height: hp(5.8),
-        width: hp(5.8),
-        justifyContent: "center",
-        alignItems: "center",
-        transform: [{ scale: 1.3 }],
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
+            paddingVertical: wp(7),
+        },
+        inputContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+        },
+        list: {
+            paddingHorizontal: wp(4),
+        },
+        sendIcon: {
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 0.8,
+            borderColor: colors.primary,
+            borderRadius: theme.radius.lg,
+            borderCurve: "continuous",
+            height: hp(5.8),
+            width: hp(5.8),
+        },
+        center: {
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        notFound: {
+            fontSize: hp(2.5),
+            color: colors.text,
+            fontWeight: theme.fonts.medium,
+        },
+        loading: {
+            height: hp(5.8),
+            width: hp(5.8),
+            justifyContent: "center",
+            alignItems: "center",
+            transform: [{ scale: 1.3 }],
+        },
+    });

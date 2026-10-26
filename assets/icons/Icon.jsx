@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { theme } from "../../src/constants/theme";
+import { useTheme } from "../../src/contexts/ThemeContext";
 import ArrowLeft from "./ArrowLeft";
 import Bio from "./Bio";
 import Camera from "./Camera";
@@ -20,6 +20,8 @@ import User from "./User";
 import Video from "./Video";
 import Share from "./Share";
 import Send from "./Send";
+import Sun from "./Sun";
+import Moon from "./Moon";
 
 const icons = {
     home: HomeIcon,
@@ -42,9 +44,12 @@ const icons = {
     comment: Comment,
     share: Share,
     send: Send,
+    sun: Sun,
+    moon: Moon,
 };
 
 const Icon = ({ name, ...props }) => {
+    const { colors } = useTheme();
     const IconComponent = icons[name];
 
     if (!IconComponent) return null;
@@ -54,7 +59,7 @@ const Icon = ({ name, ...props }) => {
             height={props.size || 24}
             width={props.size || 24}
             strokeWidth={props.strokeWidth || 1.9}
-            color={theme.colors.textLight}
+            color={colors.textLight}
             {...props}
         />
     );

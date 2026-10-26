@@ -1,19 +1,26 @@
 import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { View } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
+import BottomNav from "../components/BottomNav";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 
 const _layout = () => {
     return (
-        <AuthProvider>
-            <MainLayout />
-        </AuthProvider>
+        <ThemeProvider>
+            <AuthProvider>
+                <MainLayout />
+            </AuthProvider>
+        </ThemeProvider>
     );
 };
 
 const MainLayout = () => {
     const { setAuth, setUserData } = useAuth();
+    const { colors, isDark } = useTheme();
     const router = useRouter();
 
     const updateUserData = async (user, email) => {
@@ -46,18 +53,25 @@ const MainLayout = () => {
     }, []);
 
     return (
-        <Stack
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <Stack.Screen
-                name="(main)/postDetails"
-                options={{
-                    presentation: "modal",
-                }}
-            />
-        </Stack>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <StatusBar style={isDark ? "light" : "dark"} />
+            <View style={{ flex: 1 }}>
+                <Stack
+                    screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: colors.background },
+                    }}
+                >
+                    <Stack.Screen
+                        name="(main)/postDetails"
+                        options={{
+                            presentation: "modal",
+                        }}
+                    />
+                </Stack>
+            </View>
+            <BottomNav />
+        </View>
     );
 };
 

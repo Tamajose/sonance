@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Loading from "./Loading";
+import { useThemedStyles } from "../contexts/ThemeContext";
 
 const Button = ({
     buttonStyle,
@@ -11,8 +12,10 @@ const Button = ({
     loading = false,
     hasShadow = true,
 }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+
     const shadowStyle = {
-        shadowColor: theme.colors.dark,
+        shadowColor: colors.dark,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -25,7 +28,7 @@ const Button = ({
                 style={[
                     styles.button,
                     buttonStyle,
-                    { backgroundColor: "white" },
+                    { backgroundColor: colors.card },
                 ]}
             >
                 <Loading />
@@ -44,18 +47,19 @@ const Button = ({
 
 export default Button;
 
-const styles = StyleSheet.create({
-    button: {
-        backgroundColor: theme.colors.primary,
-        height: hp(6.6),
-        justifyContent: "center",
-        alignItems: "center",
-        borderCurve: "continuous",
-        borderRadius: theme.radius.xl,
-    },
-    text: {
-        fontSize: hp(2.5),
-        color: "white",
-        fontWeight: theme.fonts.bold,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        button: {
+            backgroundColor: colors.primary,
+            height: hp(6.6),
+            justifyContent: "center",
+            alignItems: "center",
+            borderCurve: "continuous",
+            borderRadius: theme.radius.xl,
+        },
+        text: {
+            fontSize: hp(2.5),
+            color: "white",
+            fontWeight: theme.fonts.bold,
+        },
+    });

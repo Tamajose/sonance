@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
@@ -8,23 +8,28 @@ import {
     fetchRecommendedPosts,
 } from "../../../services/postService";
 import { getUserData } from "../../../services/userService";
-import Avatar from "../../components/Avatar";
 import Loading from "../../components/Loading";
 import PostCard from "../../components/PostCard";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme, useThemedStyles } from "../../contexts/ThemeContext";
 import { hp, wp } from "../../helpers/common";
 
-let limit = 0;
+const FEEDS = [
+    ["latest", "Latest"],
+    ["forYou", "For you"],
+];
 
 const Home = () => {
-    const { user, setAuth } = useAuth();
+    const { styles, colors } = useThemedStyles(createStyles);
+    const { isDark, toggleTheme } = useTheme();
+    const { user } = useAuth();
     const router = useRouter();
 
+    const limitRef = useRef(0);
     const [posts, setPosts] = useState([]);
     const [hasMore, setHasMore] = useState(true);
-    const [notificationCount, setNotificationCount] = useState(0);
     const [feed, setFeed] = useState("latest");
 
     const loadFeed = (mode, count) =>
@@ -35,9 +40,9 @@ const Home = () => {
     const getPosts = async () => {
         if (!hasMore) return null;
 
-        limit += 10;
+        limitRef.current += 10;
 
-        let res = await loadFeed(feed, limit);
+        let res = await loadFeed(feed, limitRef.current);
         if (res.success) {
             if (posts.length === res.data.length) setHasMore(false);
             setPosts(res.data);
@@ -47,12 +52,12 @@ const Home = () => {
     const switchFeed = async (mode) => {
         if (mode === feed) return;
 
-        limit = 10;
+        limitRef.current = 10;
         setFeed(mode);
         setHasMore(true);
         setPosts([]);
 
-        let res = await loadFeed(mode, limit);
+        let res = await loadFeed(mode, limitRef.current);
         if (res.success) setPosts(res.data);
     };
 
@@ -88,13 +93,6 @@ const Home = () => {
         }
     };
 
-    const handleNewNotification = async (payload) => {
-        console.log("New notification: ", payload);
-        if (payload.eventType == "INSERT" && payload.new.id) {
-            setNotificationCount((prev) => prev + 1);
-        }
-    };
-
     useEffect(() => {
         let postChannel = supabase
             .channel("posts_" + Date.now())
@@ -105,23 +103,8 @@ const Home = () => {
             )
             .subscribe();
 
-        let notificationChannel = supabase
-            .channel("notifications_" + Date.now())
-            .on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "notifications",
-                    filter: `receiverId=eq.${user.id}`,
-                },
-                handleNewNotification,
-            )
-            .subscribe();
-
         return () => {
             supabase.removeChannel(postChannel);
-            supabase.removeChannel(notificationChannel);
         };
     }, []);
 
@@ -130,45 +113,27 @@ const Home = () => {
             <View style={styles.container}>
                 <View style={styles.header}>
                     <Text style={styles.title}>Sonance</Text>
-                    <View style={styles.icons}>
-                        <Pressable onPress={() => router.push("notifications")}>
-                            <Icon
-                                name="heart"
-                                size={hp(3.2)}
-                                strokeWidth={2}
-                                color={theme.colors.text}
-                            />
-                            {notificationCount > 0 && (
-                                <View style={styles.pill}>
-                                    <Text style={styles.pillText}>
-                                        {notificationCount}
-                                    </Text>
-                                </View>
-                            )}
-                        </Pressable>
-                        <Pressable onPress={() => router.push("newPost")}>
-                            <Icon
-                                name="plus"
-                                size={hp(3.2)}
-                                strokeWidth={2}
-                                color={theme.colors.text}
-                            />
-                        </Pressable>
-                        <Pressable onPress={() => router.push("profile")}>
-                            <Avatar
-                                uri={user?.image}
-                                size={hp(4.3)}
-                                rounded={theme.radius.sm}
-                                style={{ borderWidth: 2 }}
-                            />
-                        </Pressable>
-                    </View>
+                    <Pressable
+                        onPress={toggleTheme}
+                        style={styles.themeButton}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                            isDark
+                                ? "Switch to light mode"
+                                : "Switch to dark mode"
+                        }
+                    >
+                        <Icon
+                            name={isDark ? "sun" : "moon"}
+                            size={hp(2.8)}
+                            strokeWidth={2}
+                            color={colors.text}
+                        />
+                    </Pressable>
                 </View>
+
                 <View style={styles.tabs}>
-                    {[
-                        ["latest", "Latest"],
-                        ["forYou", "For you"],
-                    ].map(([mode, label]) => (
+                    {FEEDS.map(([mode, label]) => (
                         <Pressable
                             key={mode}
                             onPress={() => switchFeed(mode)}
@@ -194,6 +159,7 @@ const Home = () => {
                         <Text style={styles.tabText}>Search</Text>
                     </Pressable>
                 </View>
+
                 <FlatList
                     data={posts}
                     showsVerticalScrollIndicator={false}
@@ -208,7 +174,6 @@ const Home = () => {
                     )}
                     onEndReached={() => {
                         getPosts();
-                        console.log("Bottom reached");
                     }}
                     onEndReachedThreshold={0}
                     ListFooterComponent={
@@ -237,85 +202,60 @@ const Home = () => {
 
 export default Home;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        //paddingHorizontal: wp(4),
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 10,
-        marginHorizontal: wp(4),
-    },
-    title: {
-        color: theme.colors.text,
-        fontSize: hp(3.2),
-        fontWeight: theme.fonts.bold,
-    },
-    avatarImage: {
-        height: hp(4.3),
-        width: hp(4.3),
-        borderRadius: theme.radius.sm,
-        borderCurve: "continuous",
-        borderColor: theme.colors.gray,
-        borderWidth: 3,
-    },
-    icons: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 18,
-    },
-    tabs: {
-        flexDirection: "row",
-        gap: 10,
-        marginHorizontal: wp(4),
-    },
-    tab: {
-        paddingVertical: 6,
-        paddingHorizontal: 14,
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: theme.colors.gray,
-    },
-    tabActive: {
-        backgroundColor: theme.colors.primary,
-        borderColor: theme.colors.primary,
-    },
-    tabText: {
-        fontSize: hp(1.8),
-        color: theme.colors.text,
-    },
-    tabTextActive: {
-        color: "white",
-        fontWeight: theme.fonts.semiBold,
-    },
-    listStyle: {
-        paddingTop: 20,
-        paddingHorizontal: wp(4),
-    },
-    noPost: {
-        fontSize: hp(2),
-        textAlign: "center",
-        color: theme.colors.text,
-    },
-    pill: {
-        position: "absolute",
-        right: -10,
-        top: -4,
-        height: hp(2.2),
-        width: hp(2.2),
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 20,
-        backgroundColor: theme.colors.roseLight,
-    },
-    pillText: {
-        color: "white",
-        fontSize: hp(1.2),
-        fontWeight: theme.fonts.bold,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        header: {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 14,
+            marginHorizontal: wp(4),
+        },
+        title: {
+            color: colors.textDark,
+            fontSize: hp(3.2),
+            fontWeight: theme.fonts.bold,
+        },
+        themeButton: {
+            padding: 9,
+            borderRadius: 50,
+            backgroundColor: colors.surface,
+        },
+        tabs: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginHorizontal: wp(4),
+        },
+        tab: {
+            paddingVertical: 7,
+            paddingHorizontal: 22,
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: colors.darkLight,
+        },
+        tabActive: {
+            backgroundColor: colors.primary,
+            borderColor: colors.primary,
+        },
+        tabText: {
+            fontSize: hp(1.8),
+            color: colors.text,
+        },
+        tabTextActive: {
+            color: colors.onPrimary,
+            fontWeight: theme.fonts.semiBold,
+        },
+        listStyle: {
+            paddingTop: 20,
+            paddingHorizontal: wp(4),
+        },
+        noPost: {
+            fontSize: hp(2),
+            textAlign: "center",
+            color: colors.text,
+        },
+    });

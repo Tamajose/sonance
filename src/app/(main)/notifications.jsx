@@ -8,8 +8,10 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
 
 const Notifications = () => {
+    const { styles } = useThemedStyles(createStyles);
     const [notifications, setNotifications] = useState([]);
     const { user } = useAuth();
     const router = useRouter();
@@ -51,19 +53,20 @@ const Notifications = () => {
 
 export default Notifications;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: wp(4),
-    },
-    listStyle: {
-        paddingVertical: 20,
-        gap: 10,
-    },
-    noData: {
-        fontSize: hp(1.8),
-        fontWeight: theme.fonts.medium,
-        color: theme.colors.text,
-        textAlign: "center",
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            paddingHorizontal: wp(4),
+        },
+        listStyle: {
+            paddingVertical: 20,
+            gap: 10,
+        },
+        noData: {
+            fontSize: hp(1.8),
+            fontWeight: theme.fonts.medium,
+            color: colors.text,
+            textAlign: "center",
+        },
+    });

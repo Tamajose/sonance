@@ -11,6 +11,7 @@ const Share = (props) => {
             fill="none"
             stroke="currentColor"
             strokeWidth={props.strokeWidth}
+            {...props}
         >
             <Path d="M21 6.5C21 8.15685 19.6569 9.5 18 9.5C16.3431 9.5 15 8.15685 15 6.5C15 4.84315 16.3431 3.5 18 3.5C19.6569 3.5 21 4.84315 21 6.5Z"></Path>
             <Path d="M9 12C9 13.6569 7.65685 15 6 15C4.34315 15 3 13.6569 3 12C3 10.3431 4.34315 9 6 9C7.65685 9 9 10.3431 9 12Z"></Path>

@@ -24,6 +24,7 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
 
 const PostVideo = ({ uri }) => {
     const player = useVideoPlayer(uri, (player) => {
@@ -42,6 +43,7 @@ const PostVideo = ({ uri }) => {
 };
 
 const NewPost = () => {
+    const { styles, colors } = useThemedStyles(createStyles);
     const post = useLocalSearchParams();
     console.log("Post: ", post);
     const { user } = useAuth();
@@ -161,7 +163,7 @@ const NewPost = () => {
     console.log("File Uri: ", getFileUri(file));
 
     return (
-        <ScreenWrapper bg="white">
+        <ScreenWrapper>
             <View style={styles.container}>
                 <Header title="Create Post" />
 
@@ -239,14 +241,14 @@ const NewPost = () => {
                                 <Icon
                                     name="image"
                                     size={30}
-                                    color={theme.colors.dark}
+                                    color={colors.dark}
                                 />
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => onPick(false)}>
                                 <Icon
                                     name="video"
                                     size={30}
-                                    color={theme.colors.dark}
+                                    color={colors.dark}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -266,114 +268,115 @@ const NewPost = () => {
 
 export default NewPost;
 
-const styles = StyleSheet.create({
-    captionButton: {
-        alignSelf: "flex-start",
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
-    },
-    captionButtonText: {
-        color: theme.colors.primary,
-        fontSize: hp(1.8),
-        fontWeight: theme.fonts.semiBold,
-    },
-    tags: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 8,
-    },
-    tag: {
-        color: theme.colors.textLight,
-        fontSize: hp(1.7),
-    },
-    container: {
-        flex: 1,
-        //backgroundColor: 'red',
-        marginBottom: 30,
-        paddingHorizontal: wp(4),
-        gap: 15,
-    },
-    title: {
-        // marginBottom: 10,
-        fontSize: hp(2.5),
-        fontWeight: theme.fonts.semiBold,
-        color: theme.colors.text,
-        textAlign: "center",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-    },
-    username: {
-        fontSize: hp(2.2),
-        fontWeight: theme.fonts.semiBold,
-        color: theme.colors.text,
-    },
-    avatar: {
-        height: hp(6.5),
-        width: hp(6.5),
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.1)",
-    },
-    publicText: {
-        fontSize: hp(1.7),
-        fontWeight: theme.fonts.medium,
-        color: theme.colors.textLight,
-    },
-    textEditor: {
-        // marginTop: 10,
-    },
-    media: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        borderWidth: 1.5,
-        padding: 12,
-        paddingHorizontal: 18,
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        borderColor: theme.colors.gray,
-    },
-    mediaIcons: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 15,
-    },
-    addImageText: {
-        fontSize: hp(1.9),
-        fontWeight: theme.fonts.semiBold,
-        color: theme.colors.text,
-    },
-    imageIcon: {
-        // backgroundColor: theme.colors.gray,
-        borderRadius: theme.radius.md,
-        // padding: 6,
-    },
-    file: {
-        height: hp(30),
-        width: "100%",
-        borderRadius: theme.radius.xl,
-        overflow: "hidden",
-        borderCurve: "continuous",
-    },
-    video: {},
-    closeIcon: {
-        position: "absolute",
-        top: 10,
-        right: 10,
-        backgroundColor: "rgba(230, 69, 69, 0.6)",
-        padding: 6,
-        borderRadius: 50,
-        // shadowColor: theme.colors.textLight,
-        // shadowOffset: { width: 0, height: 3 },
-        // shadowOpacity: 0.6,
-        // shadowRadius: 8,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        captionButton: {
+            alignSelf: "flex-start",
+            paddingVertical: 8,
+            paddingHorizontal: 14,
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: colors.primary,
+        },
+        captionButtonText: {
+            color: colors.primary,
+            fontSize: hp(1.8),
+            fontWeight: theme.fonts.semiBold,
+        },
+        tags: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+        },
+        tag: {
+            color: colors.textLight,
+            fontSize: hp(1.7),
+        },
+        container: {
+            flex: 1,
+            //backgroundColor: 'red',
+            marginBottom: 30,
+            paddingHorizontal: wp(4),
+            gap: 15,
+        },
+        title: {
+            // marginBottom: 10,
+            fontSize: hp(2.5),
+            fontWeight: theme.fonts.semiBold,
+            color: colors.text,
+            textAlign: "center",
+        },
+        header: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+        },
+        username: {
+            fontSize: hp(2.2),
+            fontWeight: theme.fonts.semiBold,
+            color: colors.text,
+        },
+        avatar: {
+            height: hp(6.5),
+            width: hp(6.5),
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            borderWidth: 1,
+            borderColor: "rgba(0,0,0,0.1)",
+        },
+        publicText: {
+            fontSize: hp(1.7),
+            fontWeight: theme.fonts.medium,
+            color: colors.textLight,
+        },
+        textEditor: {
+            // marginTop: 10,
+        },
+        media: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderWidth: 1.5,
+            padding: 12,
+            paddingHorizontal: 18,
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            borderColor: colors.gray,
+        },
+        mediaIcons: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 15,
+        },
+        addImageText: {
+            fontSize: hp(1.9),
+            fontWeight: theme.fonts.semiBold,
+            color: colors.text,
+        },
+        imageIcon: {
+            // backgroundColor: colors.gray,
+            borderRadius: theme.radius.md,
+            // padding: 6,
+        },
+        file: {
+            height: hp(30),
+            width: "100%",
+            borderRadius: theme.radius.xl,
+            overflow: "hidden",
+            borderCurve: "continuous",
+        },
+        video: {},
+        closeIcon: {
+            position: "absolute",
+            top: 10,
+            right: 10,
+            backgroundColor: "rgba(230, 69, 69, 0.6)",
+            padding: 6,
+            borderRadius: 50,
+            // shadowColor: colors.textLight,
+            // shadowOffset: { width: 0, height: 3 },
+            // shadowOpacity: 0.6,
+            // shadowRadius: 8,
+        },
+    });

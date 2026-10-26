@@ -4,6 +4,7 @@ import { hp } from "../helpers/common";
 import { theme } from "../constants/theme";
 import { Image } from "expo-image";
 import { getUserImageSrc } from "../../services/imageService";
+import { useThemedStyles } from "../contexts/ThemeContext";
 
 const Avatar = ({
     uri,
@@ -11,6 +12,8 @@ const Avatar = ({
     rounded = theme.radius.md,
     style = {},
 }) => {
+    const { styles } = useThemedStyles(createStyles);
+
     return (
         <Image
             source={getUserImageSrc(uri)}
@@ -26,10 +29,11 @@ const Avatar = ({
 
 export default Avatar;
 
-const styles = StyleSheet.create({
-    avatar: {
-        borderCurve: "continuous",
-        borderColor: theme.colors.darkLight,
-        borderWidth: 1,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        avatar: {
+            borderCurve: "continuous",
+            borderColor: colors.darkLight,
+            borderWidth: 1,
+        },
+    });

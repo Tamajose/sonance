@@ -11,6 +11,7 @@ const Image = (props) => {
             fill="none"
             stroke="currentColor"
             strokeWidth={props.strokeWidth}
+            {...props}
         >
             <Circle
                 cx="7.5"

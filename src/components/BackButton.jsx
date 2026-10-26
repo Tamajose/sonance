@@ -1,15 +1,18 @@
 import { Pressable, StyleSheet } from "react-native";
 import Icon from "../../assets/icons/Icon";
 import { theme } from "../constants/theme";
+import { useThemedStyles } from "../contexts/ThemeContext";
 
 const BackButton = ({ size = 26, router }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+
     return (
         <Pressable onPress={() => router.back()} style={styles.button}>
             <Icon
                 name="arrowLeft"
                 strokeWidth={2.5}
                 size={size}
-                color={theme.colors.text}
+                color={colors.text}
             ></Icon>
         </Pressable>
     );
@@ -17,11 +20,12 @@ const BackButton = ({ size = 26, router }) => {
 
 export default BackButton;
 
-const styles = StyleSheet.create({
-    button: {
-        alignSelf: "flex-start",
-        padding: 5,
-        borderRadius: theme.radius.sm,
-        backgroundColor: (0, 0, 0, 0.07),
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        button: {
+            alignSelf: "flex-start",
+            padding: 5,
+            borderRadius: theme.radius.sm,
+            backgroundColor: colors.surface,
+        },
+    });

@@ -16,8 +16,10 @@ import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
+import { useThemedStyles } from "../../contexts/ThemeContext";
 
 const Search = () => {
+    const { styles, colors } = useThemedStyles(createStyles);
     const { user } = useAuth();
     const router = useRouter();
 
@@ -43,7 +45,7 @@ const Search = () => {
                     <TextInput
                         style={styles.input}
                         placeholder="Search by meaning, e.g. concert"
-                        placeholderTextColor={theme.colors.textLight}
+                        placeholderTextColor={colors.textLight}
                         value={query}
                         onChangeText={setQuery}
                         onSubmitEditing={onSearch}
@@ -86,48 +88,49 @@ const Search = () => {
 
 export default Search;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: wp(4),
-        gap: 12,
-    },
-    searchRow: {
-        flexDirection: "row",
-        gap: 10,
-        alignItems: "center",
-    },
-    input: {
-        flex: 1,
-        height: hp(6),
-        borderWidth: 0.4,
-        borderColor: theme.colors.text,
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        paddingHorizontal: 18,
-        fontSize: hp(1.9),
-        color: theme.colors.text,
-    },
-    button: {
-        height: hp(6),
-        paddingHorizontal: 20,
-        justifyContent: "center",
-        borderRadius: theme.radius.xl,
-        borderCurve: "continuous",
-        backgroundColor: theme.colors.primary,
-    },
-    buttonText: {
-        color: "white",
-        fontSize: hp(2),
-        fontWeight: theme.fonts.bold,
-    },
-    listStyle: {
-        paddingTop: 10,
-    },
-    empty: {
-        textAlign: "center",
-        marginTop: 40,
-        fontSize: hp(2),
-        color: theme.colors.textLight,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            paddingHorizontal: wp(4),
+            gap: 12,
+        },
+        searchRow: {
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+        },
+        input: {
+            flex: 1,
+            height: hp(6),
+            borderWidth: 0.4,
+            borderColor: colors.text,
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            paddingHorizontal: 18,
+            fontSize: hp(1.9),
+            color: colors.text,
+        },
+        button: {
+            height: hp(6),
+            paddingHorizontal: 20,
+            justifyContent: "center",
+            borderRadius: theme.radius.xl,
+            borderCurve: "continuous",
+            backgroundColor: colors.primary,
+        },
+        buttonText: {
+            color: "white",
+            fontSize: hp(2),
+            fontWeight: theme.fonts.bold,
+        },
+        listStyle: {
+            paddingTop: 10,
+        },
+        empty: {
+            textAlign: "center",
+            marginTop: 40,
+            fontSize: hp(2),
+            color: colors.textLight,
+        },
+    });

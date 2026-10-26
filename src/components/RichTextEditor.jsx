@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
     RichEditor,
@@ -5,8 +6,22 @@ import {
     actions,
 } from "react-native-pell-rich-editor";
 import { theme } from "../constants/theme";
+import { useThemedStyles } from "../contexts/ThemeContext";
 
 const RichTextEditor = ({ editorRef, onChange }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
+
+    // The editor runs in a WebView, so its colors are passed in as CSS values
+    const editorStyle = useMemo(
+        () => ({
+            backgroundColor: colors.card,
+            color: colors.text,
+            placeholderColor: colors.textLight,
+            caretColor: colors.primary,
+        }),
+        [colors],
+    );
+
     return (
         <View style={{ minHeight: 250 }}>
             <RichToolbar
@@ -38,7 +53,8 @@ const RichTextEditor = ({ editorRef, onChange }) => {
                 }}
                 style={styles.richBar}
                 flatContainerStyle={styles.flatStyle}
-                selectedIconTint={theme.colors.primary}
+                iconTint={colors.text}
+                selectedIconTint={colors.primary}
                 editor={editorRef}
                 disabled={false}
             />
@@ -46,7 +62,7 @@ const RichTextEditor = ({ editorRef, onChange }) => {
             <RichEditor
                 ref={editorRef}
                 containerStyle={styles.rich}
-                editorStyle={styles.contentStyle}
+                editorStyle={editorStyle}
                 placeholder={"What's on your mind"}
                 onChange={onChange}
             />
@@ -56,28 +72,25 @@ const RichTextEditor = ({ editorRef, onChange }) => {
 
 export default RichTextEditor;
 
-const styles = StyleSheet.create({
-    richBar: {
-        borderTopRightRadius: theme.radius.xl,
-        borderTopLeftRadius: theme.radius.xl,
-        backgroundColor: theme.colors.gray,
-    },
-    rich: {
-        minHeight: 200,
-        flex: 1,
-        borderWidth: 1.5,
-        borderTopWidth: 0,
-        borderBottomLeftRadius: theme.radius.xl,
-        borderBottomRightRadius: theme.radius.xl,
-        borderColor: theme.colors.gray,
-        padding: 5,
-    },
-    content: {
-        color: theme.colors.text,
-        placeholderColor: "gray",
-    },
-    flatStyle: {
-        paddingHorizontal: 8,
-        gap: 5,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        richBar: {
+            borderTopRightRadius: theme.radius.xl,
+            borderTopLeftRadius: theme.radius.xl,
+            backgroundColor: colors.gray,
+        },
+        rich: {
+            minHeight: 200,
+            flex: 1,
+            borderWidth: 1.5,
+            borderTopWidth: 0,
+            borderBottomLeftRadius: theme.radius.xl,
+            borderBottomRightRadius: theme.radius.xl,
+            borderColor: colors.gray,
+            padding: 5,
+        },
+        flatStyle: {
+            paddingHorizontal: 8,
+            gap: 5,
+        },
+    });

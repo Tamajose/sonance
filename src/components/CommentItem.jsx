@@ -4,6 +4,7 @@ import Icon from "../../assets/icons/Icon";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Avatar from "./Avatar";
+import { useThemedStyles } from "../contexts/ThemeContext";
 
 const CommentItem = ({
     item,
@@ -11,6 +12,7 @@ const CommentItem = ({
     onDelete = () => {},
     highlight = false,
 }) => {
+    const { styles, colors } = useThemedStyles(createStyles);
     const createdAt = moment(item?.created_at).format("MMM D");
 
     const handleDelete = () => {
@@ -45,11 +47,13 @@ const CommentItem = ({
                 >
                     <View style={styles.nameContainer}>
                         <Text style={styles.text}>{item?.user?.name}</Text>
-                        <Text style={{ fontWeight: "bold" }}>·····</Text>
+                        <Text style={{ fontWeight: "bold", color: colors.textLight }}>
+                            ·····
+                        </Text>
                         <Text
                             style={[
                                 styles.text,
-                                { color: theme.colors.textLight },
+                                { color: colors.textLight },
                             ]}
                         >
                             {createdAt}
@@ -60,7 +64,7 @@ const CommentItem = ({
                             <Icon
                                 name="delete"
                                 size={20}
-                                color={theme.colors.rose}
+                                color={colors.rose}
                             />
                         </TouchableOpacity>
                     )}
@@ -75,39 +79,40 @@ const CommentItem = ({
 
 export default CommentItem;
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: "row",
-        gap: 7,
-    },
-    content: {
-        backgroundColor: "rgba(0, 0, 0, 0.06)",
-        flex: 1,
-        gap: 5,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        borderRadius: theme.radius.md,
-        borderCurve: "continuous",
-    },
-    highlight: {
-        borderWidth: 0.2,
-        backgroundColor: "white",
-        borderColor: theme.colors.dark,
-        shadowColor: theme.colors.dark,
-        shadowOffset: { height: 0, width: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    nameContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 3,
-    },
-    text: {
-        fontSize: hp(1.6),
-        fontWeight: theme.fonts.medium,
-        color: theme.colors.textDark,
-    },
-});
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            flexDirection: "row",
+            gap: 7,
+        },
+        content: {
+            backgroundColor: colors.surface,
+            flex: 1,
+            gap: 5,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
+            borderRadius: theme.radius.md,
+            borderCurve: "continuous",
+        },
+        highlight: {
+            borderWidth: 0.2,
+            backgroundColor: colors.card,
+            borderColor: colors.dark,
+            shadowColor: colors.dark,
+            shadowOffset: { height: 0, width: 0 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 5,
+        },
+        nameContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 3,
+        },
+        text: {
+            fontSize: hp(1.6),
+            fontWeight: theme.fonts.medium,
+            color: colors.textDark,
+        },
+    });
