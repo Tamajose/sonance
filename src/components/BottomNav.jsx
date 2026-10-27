@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePathname, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "../../assets/icons/Icon";
 import { supabase } from "../../lib/supabase";
@@ -9,6 +10,7 @@ import { theme } from "../constants/theme";
 import { useAuth } from "../contexts/AuthContext";
 import { useThemedStyles } from "../contexts/ThemeContext";
 import { hp } from "../helpers/common";
+import { select } from "../helpers/haptics";
 
 const TABS = [
     {
@@ -149,6 +151,7 @@ const BottomNav = () => {
     const activeKey = TABS.find((tab) => tab.match.includes(pathname))?.key;
 
     const onPress = (tab) => {
+        if (tab.key !== activeKey) select();
         if (tab.key === "notifications") setUnread(0);
         router.navigate(tab.path);
     };
@@ -226,6 +229,7 @@ const createStyles = (colors) =>
             elevation: 6,
         },
         item: {
+            flexShrink: 0,
             flexDirection: "row",
             alignItems: "center",
             gap: 8,
@@ -238,6 +242,8 @@ const createStyles = (colors) =>
             backgroundColor: colors.primary,
         },
         label: {
+            flexShrink: 0,
+            paddingRight: 2,
             color: colors.onPrimary,
             fontSize: hp(1.7),
             fontWeight: theme.fonts.semiBold,

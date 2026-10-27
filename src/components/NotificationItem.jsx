@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Avatar from "./Avatar";

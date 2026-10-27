@@ -5,9 +5,9 @@ import {
     Platform,
     Pressable,
     StyleSheet,
-    Text,
     TouchableOpacity,
 } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
 import { fetchFollowCounts } from "../../../services/followService";

@@ -1,14 +1,8 @@
 import ScreenWrapper from "@/components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import {
-    Alert,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
+import Text from "../components/AppText";
 import Icon from "../../assets/icons/Icon";
 import { supabase } from "../../lib/supabase.ts";
 import BackButton from "../components/BackButton";

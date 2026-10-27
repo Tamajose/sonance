@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import {
     fetchFollowCounts,
@@ -18,6 +19,7 @@ import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { useThemedStyles } from "../../contexts/ThemeContext";
 import { hp } from "../../helpers/common";
+import { tap } from "../../helpers/haptics";
 
 const PAGE_SIZE = 18;
 
@@ -92,6 +94,7 @@ const UserProfile = () => {
 
     const onToggleFollow = async () => {
         if (followBusy) return;
+        tap();
         setFollowBusy(true);
 
         const next = !isFollowing;

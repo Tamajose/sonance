@@ -1,7 +1,8 @@
 import { theme } from "@/constants/theme";
 import { hp } from "@/helpers/common";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import BackButton from "./BackButton";
 import { useThemedStyles } from "../contexts/ThemeContext";
 

@@ -1,4 +1,5 @@
 import { StyleSheet, TextInput, View } from "react-native";
+import { fontFamilyFor } from "../constants/fonts";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import { useThemedStyles } from "../contexts/ThemeContext";
@@ -16,7 +17,11 @@ const Input = (props) => {
         >
             {props.icon && props.icon}
             <TextInput
-                style={{ flex: 1, color: colors.text }}
+                style={{
+                    flex: 1,
+                    color: colors.text,
+                    fontFamily: fontFamilyFor(400),
+                }}
                 placeholderTextColor={colors.textLight}
                 ref={props.inputRef && props.inputRef}
                 {...props}

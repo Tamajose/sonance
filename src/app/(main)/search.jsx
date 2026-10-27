@@ -3,16 +3,16 @@ import { useState } from "react";
 import {
     FlatList,
     StyleSheet,
-    Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import Text from "../../components/AppText";
 import { searchPosts } from "../../../services/postService";
 import Header from "../../components/Header";
-import Loading from "../../components/Loading";
 import PostCard from "../../components/PostCard";
 import ScreenWrapper from "../../components/ScreenWrapper";
+import { PostSkeleton } from "../../components/Skeleton";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
@@ -56,8 +56,9 @@ const Search = () => {
                     </TouchableOpacity>
                 </View>
                 {loading ? (
-                    <View style={{ marginVertical: 60 }}>
-                        <Loading />
+                    <View>
+                        <PostSkeleton />
+                        <PostSkeleton />
                     </View>
                 ) : (
                     <FlatList

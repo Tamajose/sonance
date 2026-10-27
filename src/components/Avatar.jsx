@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import React from "react";
 import { hp } from "../helpers/common";
 import { theme } from "../constants/theme";

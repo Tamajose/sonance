@@ -8,9 +8,9 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     View,
 } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import { getUserImageSrc, uploadFile } from "../../../services/imageService";
 import { updateUser } from "../../../services/userService";

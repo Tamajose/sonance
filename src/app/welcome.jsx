@@ -1,6 +1,7 @@
 import ScreenWrapper from "@/components/ScreenWrapper";
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Text from "../components/AppText";
 import Button from "../components/Button";
 import { theme } from "../constants/theme";
 import { hp, wp } from "../helpers/common";

@@ -4,10 +4,10 @@ import {
     FlatList,
     Pressable,
     StyleSheet,
-    Text,
     useWindowDimensions,
     View,
 } from "react-native";
+import Text from "./AppText";
 import Icon from "../../assets/icons/Icon";
 import { getSupabaseFileUrl } from "../../services/imageService";
 import { theme } from "../constants/theme";
@@ -15,7 +15,7 @@ import { useThemedStyles } from "../contexts/ThemeContext";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
 import Avatar from "./Avatar";
 import BackButton from "./BackButton";
-import Loading from "./Loading";
+import { Skeleton } from "./Skeleton";
 
 const GRID_COLUMNS = 3;
 const GRID_GAP = 2;
@@ -222,8 +222,15 @@ const ProfileView = ({
                         <Text style={styles.emptyText}>No posts yet</Text>
                     </View>
                 ) : (
-                    <View style={{ marginVertical: 40 }}>
-                        <Loading />
+                    <View style={styles.skeletonGrid}>
+                        {Array.from({ length: 6 }, (_, i) => (
+                            <Skeleton
+                                key={i}
+                                width={tileSize}
+                                height={tileSize}
+                                radius={0}
+                            />
+                        ))}
                     </View>
                 )
             }
@@ -378,6 +385,11 @@ const createStyles = (colors) =>
         textTileBody: {
             fontSize: hp(1.45),
             color: colors.text,
+        },
+        skeletonGrid: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: GRID_GAP,
         },
         empty: {
             alignItems: "center",

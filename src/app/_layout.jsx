@@ -1,14 +1,28 @@
+import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { View } from "react-native";
+import { fontAssets } from "../constants/fonts";
 import { supabase } from "../../lib/supabase";
 import { getUserData } from "../../services/userService";
 import BottomNav from "../components/BottomNav";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 
-const _layout = () => {
+SplashScreen.preventAutoHideAsync();
+
+const RootLayout = () => {
+    const [fontsLoaded, fontError] = useFonts(fontAssets);
+    const ready = fontsLoaded || !!fontError;
+
+    useEffect(() => {
+        if (ready) SplashScreen.hide();
+    }, [ready]);
+
+    if (!ready) return null;
+
     return (
         <ThemeProvider>
             <AuthProvider>
@@ -75,4 +89,4 @@ const MainLayout = () => {
     );
 };
 
-export default _layout;
+export default RootLayout;

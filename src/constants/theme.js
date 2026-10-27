@@ -14,7 +14,7 @@ export const lightColors = {
   roseLight: "#f87171",
   roseSoft: "#fee2e2",
 
-  background: "#FFFFFF",
+  background: "#F4F5F7",
   card: "#FFFFFF",
   surface: "rgba(0, 0, 0, 0.06)",
   onPrimary: "#FFFFFF",

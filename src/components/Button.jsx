@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";
 import Loading from "./Loading";

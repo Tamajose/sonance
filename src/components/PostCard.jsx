@@ -4,13 +4,15 @@ import moment from "moment/moment";
 import { useEffect, useMemo, useState } from "react";
 import {
     Alert,
+    Animated,
+    Platform,
     Pressable,
     Share,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import Text from "./AppText";
 import RenderHTML from "react-native-render-html";
 import Icon from "../../assets/icons/Icon";
 import { downloadFile, getSupabaseFileUrl } from "../../services/imageService";
@@ -19,8 +21,10 @@ import {
     deleteNotification,
 } from "../../services/notificationService";
 import { likePost, unlikePost } from "../../services/postService";
+import { fontFamilyFor } from "../constants/fonts";
 import { theme } from "../constants/theme";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
+import { select, tap } from "../helpers/haptics";
 import Avatar from "./Avatar";
 import Loading from "./Loading";
 import { useTheme, useThemedStyles } from "../contexts/ThemeContext";
@@ -29,17 +33,23 @@ const getTagsStyles = (colors) => {
     const textStyle = {
         color: colors.dark,
         fontSize: hp(1.75),
+        fontFamily: fontFamilyFor(400),
     };
+    const boldStyle = { fontFamily: fontFamilyFor(700) };
 
     return {
         div: textStyle,
         p: textStyle,
         ol: textStyle,
+        b: boldStyle,
+        strong: boldStyle,
         h1: {
             color: colors.dark,
+            ...boldStyle,
         },
         h4: {
             color: colors.dark,
+            ...boldStyle,
         },
     };
 };
@@ -77,20 +87,43 @@ const PostCard = ({
     const { isDark } = useTheme();
     const tagsStyles = useMemo(() => getTagsStyles(colors), [colors]);
     const baseStyle = useMemo(
-        () => ({ color: colors.dark, fontSize: hp(1.75) }),
+        () => ({
+            color: colors.dark,
+            fontSize: hp(1.75),
+            fontFamily: fontFamilyFor(400),
+        }),
         [colors],
     );
     const outlineStroke = isDark ? 1.6 : 1;
 
     const shadowStyles = {
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 6,
-        elevation: 1,
+        shadowOpacity: isDark ? 0 : 0.08,
+        shadowRadius: 10,
+        elevation: isDark ? 0 : 2,
     };
 
     const [likes, setLikes] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [heartScale] = useState(() => new Animated.Value(1));
+
+    const popHeart = () => {
+        const native = Platform.OS !== "web";
+        Animated.sequence([
+            Animated.spring(heartScale, {
+                toValue: 1.35,
+                speed: 40,
+                bounciness: 12,
+                useNativeDriver: native,
+            }),
+            Animated.spring(heartScale, {
+                toValue: 1,
+                speed: 20,
+                bounciness: 8,
+                useNativeDriver: native,
+            }),
+        ]).start();
+    };
 
     useEffect(() => {
         setLikes(item?.postLikes ?? []);
@@ -123,6 +156,7 @@ const PostCard = ({
 
     const onLike = async () => {
         if (liked) {
+            select();
             let updatedLikes = likes.filter(
                 (like) => like.userId != currentUser?.id,
             );
@@ -135,6 +169,8 @@ const PostCard = ({
                 deleteNotification(likeNotification);
             }
         } else {
+            tap();
+            popHeart();
             let data = {
                 userId: currentUser?.id,
                 postId: item?.id,
@@ -261,12 +297,16 @@ const PostCard = ({
             <View style={styles.footer}>
                 <View style={styles.footerButton}>
                     <TouchableOpacity onPress={onLike}>
-                        <Icon
-                            name="heart"
-                            size={24}
-                            fill={liked ? colors.rose : "transparent"}
-                            color={liked ? colors.rose : colors.icon}
-                        />
+                        <Animated.View
+                            style={{ transform: [{ scale: heartScale }] }}
+                        >
+                            <Icon
+                                name="heart"
+                                size={24}
+                                fill={liked ? colors.rose : "transparent"}
+                                color={liked ? colors.rose : colors.icon}
+                            />
+                        </Animated.View>
                     </TouchableOpacity>
                     <Text style={styles.count}>{likes?.length}</Text>
                 </View>
@@ -307,15 +347,12 @@ export default PostCard;
 const createStyles = (colors) =>
     StyleSheet.create({
         container: {
-            gap: 10,
-            marginBottom: 15,
-            borderRadius: theme.radius.xxl * 1.1,
+            gap: 12,
+            marginBottom: 16,
+            borderRadius: theme.radius.xxl * 1.3,
             borderCurve: "continuous",
-            padding: 10,
-            paddingVertical: 12,
+            padding: 14,
             backgroundColor: colors.card,
-            borderWidth: 0.5,
-            borderColor: colors.gray,
             shadowColor: "#000",
         },
         header: {

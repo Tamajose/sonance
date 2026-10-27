@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./AppText";
 import {
     RichEditor,
     RichToolbar,
@@ -11,7 +12,6 @@ import { useThemedStyles } from "../contexts/ThemeContext";
 const RichTextEditor = ({ editorRef, onChange }) => {
     const { styles, colors } = useThemedStyles(createStyles);
 
-    // The editor runs in a WebView, so its colors are passed in as CSS values
     const editorStyle = useMemo(
         () => ({
             backgroundColor: colors.card,

@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
 import { fetchFollowingIds } from "../../../services/followService";
@@ -12,6 +13,8 @@ import {
 import { getUserData } from "../../../services/userService";
 import Loading from "../../components/Loading";
 import PostCard from "../../components/PostCard";
+import { PostSkeleton } from "../../components/Skeleton";
+import { select } from "../../helpers/haptics";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
@@ -35,7 +38,6 @@ const Home = () => {
     const [hasMore, setHasMore] = useState(true);
     const [feed, setFeed] = useState("latest");
 
-    // The realtime handler is registered once, so it reads these through refs
     const userIdRef = useRef(user?.id);
     const feedRef = useRef(feed);
     const followingRef = useRef(new Set());
@@ -84,6 +86,7 @@ const Home = () => {
 
     const switchFeed = async (mode) => {
         if (mode === feed) return;
+        select();
 
         limitRef.current = 10;
         setFeed(mode);
@@ -218,14 +221,16 @@ const Home = () => {
                     onEndReachedThreshold={0}
                     ListFooterComponent={
                         hasMore ? (
-                            <View
-                                style={{
-                                    marginVertical:
-                                        posts.length === 0 ? 200 : 30,
-                                }}
-                            >
-                                <Loading />
-                            </View>
+                            posts.length === 0 ? (
+                                <View>
+                                    <PostSkeleton />
+                                    <PostSkeleton />
+                                </View>
+                            ) : (
+                                <View style={{ marginVertical: 30 }}>
+                                    <Loading />
+                                </View>
+                            )
                         ) : (
                             <View style={{ marginVertical: 30 }}>
                                 <Text style={styles.noPost}>

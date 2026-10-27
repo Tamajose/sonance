@@ -4,10 +4,10 @@ import {
     Alert,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
 import { createNotification } from "../../../services/notificationService";

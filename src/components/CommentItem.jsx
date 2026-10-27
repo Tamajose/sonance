@@ -1,5 +1,6 @@
 import moment from "moment";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
 import Icon from "../../assets/icons/Icon";
 import { theme } from "../constants/theme";
 import { hp } from "../helpers/common";

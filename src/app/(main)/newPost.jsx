@@ -8,10 +8,10 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import Text from "../../components/AppText";
 import Icon from "../../../assets/icons/Icon";
 import { analyzeContent, stripHtml } from "../../../services/aiService";
 import { getSupabaseFileUrl } from "../../../services/imageService";
