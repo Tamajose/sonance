@@ -68,40 +68,27 @@ export const createOrUpdatePost = async (post) => {
     }
 };
 
-export const fetchPosts = async (limit = 10, userId) => {
+export const fetchPosts = async (limit = 10, userId, excludeUserId) => {
     try {
-        if (userId) {
-            const { data, error } = await supabase
-                .from("posts")
-                .select(
-                    `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
-                )
-                .order("created_at", { ascending: false })
-                .eq("userId", userId)
-                .limit(limit);
+        let query = supabase
+            .from("posts")
+            .select(
+                `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
+            )
+            .order("created_at", { ascending: false })
+            .limit(limit);
 
-            if (error) {
-                console.log("Error in post fetching: ", error);
-                return { success: false, msg: "Could not fetch posts" };
-            }
+        if (userId) query = query.eq("userId", userId);
+        if (excludeUserId) query = query.neq("userId", excludeUserId);
 
-            return { success: true, data: data };
-        } else {
-            const { data, error } = await supabase
-                .from("posts")
-                .select(
-                    `${POST_COLUMNS}, user: users (id, name, image), postLikes(*), comments(count)`,
-                )
-                .order("created_at", { ascending: false })
-                .limit(limit);
+        const { data, error } = await query;
 
-            if (error) {
-                console.log("Error in post fetching: ", error);
-                return { success: false, msg: "Could not fetch posts" };
-            }
-
-            return { success: true, data: data };
+        if (error) {
+            console.log("Error in post fetching: ", error);
+            return { success: false, msg: "Could not fetch posts" };
         }
+
+        return { success: true, data: data };
     } catch (error) {
         console.log("Error in post fetching: ", error);
         return { success: false, msg: "Could not fetch posts" };
@@ -301,11 +288,31 @@ export const fetchRecommendedPosts = async (userId, limit = 10) => {
     }
 };
 
+export const fetchFollowingPosts = async (userId, limit = 10) => {
+    try {
+        const { data, error } = await supabase.rpc("following_posts", {
+            uid: userId,
+            lim: limit,
+        });
+
+        if (error) {
+            console.log("Error in fetching following posts: ", error);
+            return { success: false, msg: "Could not fetch posts" };
+        }
+
+        if (!data.length) return { success: true, data: [] };
+        return fetchByIds(data.map((p) => p.id));
+    } catch (error) {
+        console.log("Error in fetching following posts: ", error);
+        return { success: false, msg: "Could not fetch posts" };
+    }
+};
+
 export const fetchProfileStats = async (userId) => {
     try {
-        const { data, error } = await supabase
+        const { count, error } = await supabase
             .from("posts")
-            .select("id, postLikes(count)")
+            .select("id", { count: "exact", head: true })
             .eq("userId", userId);
 
         if (error) {
@@ -313,11 +320,7 @@ export const fetchProfileStats = async (userId) => {
             return { success: false, msg: "Could not fetch profile stats" };
         }
 
-        const likes = data.reduce(
-            (total, post) => total + (post.postLikes?.[0]?.count ?? 0),
-            0,
-        );
-        return { success: true, data: { posts: data.length, likes } };
+        return { success: true, data: { posts: count ?? 0 } };
     } catch (error) {
         console.log("Error in fetching profile stats: ", error);
         return { success: false, msg: "Could not fetch profile stats" };

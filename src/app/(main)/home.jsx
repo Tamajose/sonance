@@ -1,9 +1,11 @@
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Icon from "../../../assets/icons/Icon";
 import { supabase } from "../../../lib/supabase";
+import { fetchFollowingIds } from "../../../services/followService";
 import {
+    fetchFollowingPosts,
     fetchPosts,
     fetchRecommendedPosts,
 } from "../../../services/postService";
@@ -19,6 +21,7 @@ import { hp, wp } from "../../helpers/common";
 const FEEDS = [
     ["latest", "Latest"],
     ["forYou", "For you"],
+    ["following", "Following"],
 ];
 
 const Home = () => {
@@ -32,10 +35,40 @@ const Home = () => {
     const [hasMore, setHasMore] = useState(true);
     const [feed, setFeed] = useState("latest");
 
-    const loadFeed = (mode, count) =>
-        mode === "forYou"
-            ? fetchRecommendedPosts(user.id, count)
-            : fetchPosts(count);
+    // The realtime handler is registered once, so it reads these through refs
+    const userIdRef = useRef(user?.id);
+    const feedRef = useRef(feed);
+    const followingRef = useRef(new Set());
+    useEffect(() => {
+        userIdRef.current = user?.id;
+        feedRef.current = feed;
+    });
+
+    // Own posts never appear in the feed
+    const loadFeed = (mode, count) => {
+        if (mode === "forYou") return fetchRecommendedPosts(user.id, count);
+        if (mode === "following") return fetchFollowingPosts(user.id, count);
+        return fetchPosts(count, undefined, user.id);
+    };
+
+    const mounted = useRef(false);
+    useFocusEffect(
+        useCallback(() => {
+            if (!user?.id) return;
+            fetchFollowingIds(user.id).then((res) => {
+                if (res.success) followingRef.current = new Set(res.data);
+            });
+            if (mounted.current && feedRef.current === "following") {
+                loadFeed("following", Math.max(limitRef.current, 10)).then(
+                    (res) => {
+                        if (res.success) setPosts(res.data);
+                    },
+                );
+            }
+            mounted.current = true;
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [user?.id]),
+    );
 
     const getPosts = async () => {
         if (!hasMore) return null;
@@ -65,6 +98,13 @@ const Home = () => {
         if (payload.eventType == "INSERT" && payload?.new?.id) {
             let newPost = { ...payload.new };
             delete newPost.embedding;
+            if (newPost.userId === userIdRef.current) return;
+            if (
+                feedRef.current === "following" &&
+                !followingRef.current.has(newPost.userId)
+            ) {
+                return;
+            }
             let res = await getUserData(newPost.userId);
             newPost.likes = [];
             newPost.comments = [{ count: 0 }];
@@ -189,7 +229,9 @@ const Home = () => {
                         ) : (
                             <View style={{ marginVertical: 30 }}>
                                 <Text style={styles.noPost}>
-                                    All Caught Up!
+                                    {feed === "following" && posts.length === 0
+                                        ? "Follow people to see their posts here"
+                                        : "All Caught Up!"}
                                 </Text>
                             </View>
                         )
@@ -231,7 +273,7 @@ const createStyles = (colors) =>
         },
         tab: {
             paddingVertical: 7,
-            paddingHorizontal: 22,
+            paddingHorizontal: 14,
             borderRadius: theme.radius.xl,
             borderCurve: "continuous",
             borderWidth: 1,

@@ -4,6 +4,7 @@ import moment from "moment/moment";
 import { useEffect, useMemo, useState } from "react";
 import {
     Alert,
+    Pressable,
     Share,
     StyleSheet,
     Text,
@@ -71,12 +72,10 @@ const PostCard = ({
     const { styles, colors } = useThemedStyles(createStyles);
     const { isDark } = useTheme();
     const tagsStyles = useMemo(() => getTagsStyles(colors), [colors]);
-    // Applies to every tag and to plain-text bodies (e.g. AI captions)
     const baseStyle = useMemo(
         () => ({ color: colors.dark, fontSize: hp(1.75) }),
         [colors],
     );
-    // Outline icons are drawn thin; thicken them on dark so they stay visible
     const outlineStroke = isDark ? 1.6 : 1;
 
     const shadowStyles = {
@@ -96,6 +95,18 @@ const PostCard = ({
     const openPostDetails = () => {
         if (!showMoreIcon) return null;
         router.push({ pathname: "postDetails", params: { postId: item?.id } });
+    };
+
+    const openAuthor = () => {
+        if (!item?.userId) return;
+        if (item.userId === currentUser?.id) {
+            router.navigate("/profile");
+            return;
+        }
+        router.push({
+            pathname: "userProfile",
+            params: { userId: item.userId },
+        });
     };
 
     const onLike = async () => {
@@ -161,7 +172,7 @@ const PostCard = ({
     return (
         <View style={[styles.container, hasShadow && shadowStyles]}>
             <View style={styles.header}>
-                <View style={styles.userInfo}>
+                <Pressable style={styles.userInfo} onPress={openAuthor}>
                     <Avatar
                         size={hp(4.5)}
                         uri={item?.user?.image}
@@ -172,7 +183,7 @@ const PostCard = ({
                         <Text style={styles.username}>{item?.user?.name}</Text>
                         <Text style={styles.postTime}>{createdAt}</Text>
                     </View>
-                </View>
+                </Pressable>
 
                 {showMoreIcon && (
                     <TouchableOpacity onPress={openPostDetails}>

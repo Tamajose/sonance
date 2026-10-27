@@ -10,7 +10,7 @@ import { useThemedStyles } from "../contexts/ThemeContext";
 import { hp } from "../helpers/common";
 
 const TABS = [
-    { key: "home", label: "Home", icon: "home", path: "/home", match: ["/home", "/search"] },
+    { key: "home", label: "Home", icon: "home", path: "/home", match: ["/home", "/search", "/userProfile"] },
     { key: "notifications", label: "Alerts", icon: "heart", path: "/notifications", match: ["/notifications"] },
     { key: "newPost", label: "Post", icon: "plus", path: "/newPost", match: ["/newPost"] },
     { key: "profile", label: "Profile", icon: "user", path: "/profile", match: ["/profile", "/editProfile"] },

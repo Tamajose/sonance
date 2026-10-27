@@ -9,7 +9,11 @@ const NotificationItem = ({ item, router }) => {
     const { styles, colors } = useThemedStyles(createStyles);
 
     const handleClick = () => {
-        let { postId, commentId } = JSON.parse(item?.data);
+        let { postId, commentId, userId } = JSON.parse(item?.data);
+        if (userId) {
+            router.push({ pathname: "userProfile", params: { userId } });
+            return;
+        }
         router.push({ pathname: "postDetails", params: { postId, commentId } });
     };
 
