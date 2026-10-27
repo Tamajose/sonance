@@ -14,6 +14,10 @@ import {
 import RenderHTML from "react-native-render-html";
 import Icon from "../../assets/icons/Icon";
 import { downloadFile, getSupabaseFileUrl } from "../../services/imageService";
+import {
+    createNotification,
+    deleteNotification,
+} from "../../services/notificationService";
 import { likePost, unlikePost } from "../../services/postService";
 import { theme } from "../constants/theme";
 import { hp, stripHtmlTags, wp } from "../helpers/common";
@@ -109,6 +113,14 @@ const PostCard = ({
         });
     };
 
+    const likeNotification = {
+        senderId: currentUser?.id,
+        receiverId: item?.userId,
+        title: "liked your post",
+        data: JSON.stringify({ postId: item?.id }),
+    };
+    const notifyLike = item?.userId && item.userId !== currentUser?.id;
+
     const onLike = async () => {
         if (liked) {
             let updatedLikes = likes.filter(
@@ -119,6 +131,8 @@ const PostCard = ({
             console.log("Res: ", res);
             if (!res.success) {
                 Alert.alert("Post", "Something went wrong");
+            } else if (notifyLike) {
+                deleteNotification(likeNotification);
             }
         } else {
             let data = {
@@ -130,6 +144,8 @@ const PostCard = ({
             console.log("Res: ", res);
             if (!res.success) {
                 Alert.alert("Post", "Something went wrong");
+            } else if (notifyLike) {
+                createNotification(likeNotification);
             }
         }
     };
@@ -196,7 +212,7 @@ const PostCard = ({
                     </TouchableOpacity>
                 )}
 
-                {showDelete && currentUser.id == item?.userId && (
+                {showDelete && currentUser?.id == item?.userId && (
                     <View style={styles.actions}>
                         <TouchableOpacity onPress={() => onEdit(item)}>
                             <Icon

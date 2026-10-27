@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePathname, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, Text, View } from "react-native";
@@ -10,11 +11,37 @@ import { useThemedStyles } from "../contexts/ThemeContext";
 import { hp } from "../helpers/common";
 
 const TABS = [
-    { key: "home", label: "Home", icon: "home", path: "/home", match: ["/home", "/search", "/userProfile"] },
-    { key: "notifications", label: "Alerts", icon: "heart", path: "/notifications", match: ["/notifications"] },
-    { key: "newPost", label: "Post", icon: "plus", path: "/newPost", match: ["/newPost"] },
-    { key: "profile", label: "Profile", icon: "user", path: "/profile", match: ["/profile", "/editProfile"] },
+    {
+        key: "home",
+        label: "Home",
+        icon: "home",
+        path: "/home",
+        match: ["/home", "/search", "/userProfile"],
+    },
+    {
+        key: "notifications",
+        label: "Alerts",
+        icon: "heart",
+        path: "/notifications",
+        match: ["/notifications"],
+    },
+    {
+        key: "newPost",
+        label: "Post",
+        icon: "plus",
+        path: "/newPost",
+        match: ["/newPost"],
+    },
+    {
+        key: "profile",
+        label: "Profile",
+        icon: "user",
+        path: "/profile",
+        match: ["/profile", "/editProfile"],
+    },
 ];
+
+const seenKey = (userId) => `sonance.notificationsSeen.${userId}`;
 
 const HIDDEN_ROUTES = ["/", "/welcome", "/login", "/signUp"];
 
@@ -48,6 +75,39 @@ const BottomNav = () => {
 
     useEffect(() => {
         if (!user?.id) return;
+        let cancelled = false;
+        const key = seenKey(user.id);
+
+        const sync = async () => {
+            let seen = null;
+            try {
+                seen = await AsyncStorage.getItem(key);
+            } catch {}
+
+            if (pathname === "/notifications" || !seen) {
+                try {
+                    await AsyncStorage.setItem(key, new Date().toISOString());
+                } catch {}
+                if (!cancelled) setUnread(0);
+                return;
+            }
+
+            const { count, error } = await supabase
+                .from("notifications")
+                .select("id", { count: "exact", head: true })
+                .eq("receiverId", user.id)
+                .gt("created_at", seen);
+            if (!cancelled && !error) setUnread(count ?? 0);
+        };
+        sync();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id, pathname]);
+
+    useEffect(() => {
+        if (!user?.id) return;
 
         const channel = supabase
             .channel("nav_notifications_" + Date.now())
@@ -62,10 +122,20 @@ const BottomNav = () => {
                 () => {
                     if (pathnameRef.current !== "/notifications") {
                         setUnread((prev) => prev + 1);
+                    } else {
+                        // Already looking at the list, so it counts as seen
+                        AsyncStorage.setItem(
+                            seenKey(user.id),
+                            new Date().toISOString(),
+                        ).catch(() => {});
                     }
                 },
             )
-            .subscribe();
+            .subscribe((status, err) => {
+                if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+                    console.warn("Notification badge channel:", status, err);
+                }
+            });
 
         return () => {
             supabase.removeChannel(channel);
@@ -88,7 +158,8 @@ const BottomNav = () => {
             <View style={styles.pill}>
                 {TABS.map((tab) => {
                     const active = tab.key === activeKey;
-                    const badge = tab.key === "notifications" && !active ? unread : 0;
+                    const badge =
+                        tab.key === "notifications" && !active ? unread : 0;
 
                     return (
                         <Pressable
@@ -104,7 +175,11 @@ const BottomNav = () => {
                                     name={tab.icon}
                                     size={hp(2.8)}
                                     strokeWidth={active ? 2.3 : 1.9}
-                                    color={active ? colors.onPrimary : colors.textLight}
+                                    color={
+                                        active
+                                            ? colors.onPrimary
+                                            : colors.textLight
+                                    }
                                 />
                                 {badge > 0 && (
                                     <View style={styles.badge}>
@@ -114,7 +189,9 @@ const BottomNav = () => {
                                     </View>
                                 )}
                             </View>
-                            {active && <Text style={styles.label}>{tab.label}</Text>}
+                            {active && (
+                                <Text style={styles.label}>{tab.label}</Text>
+                            )}
                         </Pressable>
                     );
                 })}

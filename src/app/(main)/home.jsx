@@ -71,7 +71,7 @@ const Home = () => {
     );
 
     const getPosts = async () => {
-        if (!hasMore) return null;
+        if (!hasMore || !user?.id) return null;
 
         limitRef.current += 10;
 

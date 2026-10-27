@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { fetchNotifications } from "../../../services/notificationService";
 import Header from "../../components/Header";
@@ -16,14 +16,15 @@ const Notifications = () => {
     const { user } = useAuth();
     const router = useRouter();
 
-    const getNotifications = async () => {
-        let res = await fetchNotifications(user.id);
-        if (res.success) setNotifications(res.data);
-    };
-
-    useEffect(() => {
-        getNotifications();
-    }, []);
+    const userId = user?.id;
+    useFocusEffect(
+        useCallback(() => {
+            if (!userId) return;
+            fetchNotifications(userId).then((res) => {
+                if (res.success) setNotifications(res.data);
+            });
+        }, [userId]),
+    );
 
     return (
         <ScreenWrapper>

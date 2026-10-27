@@ -82,7 +82,7 @@ const PostDetails = () => {
     };
 
     const onNewComment = async () => {
-        if (!commentRef.current) return null;
+        if (!commentRef.current || !user?.id) return null;
         let data = {
             userId: user?.id,
             postId: post?.id,
@@ -218,8 +218,9 @@ const PostDetails = () => {
                             item={comment}
                             onDelete={onDeleteComment}
                             canDelete={
-                                user.id === comment.userId ||
-                                user.id === post.userId
+                                !!user?.id &&
+                                (user.id === comment.userId ||
+                                    user.id === post.userId)
                             }
                         />
                     ))}
