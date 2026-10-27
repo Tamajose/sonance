@@ -1,56 +1,112 @@
-# Welcome to your Expo app 👋
+# Sonance
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A social app built with Expo and Supabase. Users post text, images and video, follow each other, like and comment, and get notified. AI features handle moderation, caption and tag generation, semantic search and a personalised feed.
 
-## Get started
+## Features
+
+- **Auth and profiles**: email sign-up and login, editable profile, an Instagram-style profile grid, and profiles for other users
+- **Posts**: rich text, image and video posts with likes, comments, share and delete
+- **Follows**: follow and unfollow users, with a Following feed
+- **Feeds**: Latest, For you and Following. Your own posts never appear in them
+- **Notifications**: likes, comments and follows, with an unread badge on the Alerts tab
+- **Theming**: light and dark mode with a toggle on the home screen
+- **Polish**: Inter font, skeleton loaders, haptics and a like animation
+- **AI**: see [AI features](#ai-features)
+
+## Tech stack
+
+- Expo SDK 57, Expo Router (file-based routing), React Native 0.86, React 19
+- Supabase: Auth, Postgres (with pgvector), Row Level Security, Realtime, Storage and Edge Functions
+- Groq, Google Gemini and OpenAI for AI (all optional free tiers)
+
+## Getting started
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
-2. Start the app
+2. Create a `.env` file from the example and fill in your Supabase project values
 
-   ```bash
-   npx expo start
-   ```
+    ```bash
+    cp .env.example .env
+    ```
 
-In the output, you'll find options to open the app in a
+    | Variable                   | Description                                     |
+    | -------------------------- | ----------------------------------------------- |
+    | `EXPO_PUBLIC_SUPABASE_URL` | Your project URL                                |
+    | `EXPO_PUBLIC_SUPABASE_KEY` | Your project's public (anon or publishable) key |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+3. Start the app
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+    ```bash
+    npx expo start
+    ```
 
-## Get a fresh project
+    Then open it in an emulator, a simulator, a development build, Expo Go, or press `w` for the web.
 
-When you're ready, run:
+Linting: `npm run lint`
 
-```bash
-npm run reset-project
+## Project structure
+
+```
+src/
+  app/                 Routes (Expo Router)
+    (main)/            Signed-in screens: home, search, newPost, notifications,
+                       profile, userProfile, postDetails, editProfile
+    welcome, login, signUp
+  components/          PostCard, ProfileView, BottomNav, Skeleton, AppText, ...
+  contexts/            AuthContext, ThemeContext
+  constants/           theme (light and dark palettes), fonts
+  helpers/             common utilities, haptics
+services/              Supabase calls: posts, users, follows, notifications, images, AI
+lib/supabase.js        Supabase client
+supabase/functions/ai  Edge function for moderation, captions and embeddings
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Use `AppText` (`src/components/AppText.jsx`) instead of React Native's `Text` so the app font applies. Read colours from `useThemedStyles` or `useTheme` rather than hard-coding them, so dark mode keeps working.
 
-### Other setup steps
+## Backend setup
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+The database schema lives in the Supabase project, not in this repository, so a new project has to be set up by hand.
 
-## Learn more
+**Tables** (all have Row Level Security enabled): `users`, `posts`, `postLikes`, `comments`, `notifications`, `follows`.
 
-To learn more about developing your project with Expo, look at the following resources:
+- `posts` has `tags text[]` and `embedding vector(384)`
+- `users` has `"tagScores" jsonb`
+- `follows` has `follower_id` and `following_id`, with the pair as the primary key
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+**Functions and triggers**
 
-## Join the community
+| Name                                        | Purpose                                                                                                         |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `match_posts(query_embedding, match_count)` | Nearest posts by embedding, used by search                                                                      |
+| `recommended_posts(uid, lim)`               | Other users' posts ranked by the viewer's tag scores                                                            |
+| `following_posts(uid, lim)`                 | Posts from people the viewer follows                                                                            |
+| `bump_tag_scores()`                         | Trigger `on_like_change` on `postLikes` that raises or lowers the liker's tag scores                            |
+| `handle_new_user()`                         | Trigger `on_auth_user_created` on `auth.users` that creates the `users` row (id and name) when someone signs up |
 
-Join our community of developers creating universal apps.
+**Storage**: a public bucket named `uploads`, with `postImages`, `postVideos` and `profiles` folders.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Realtime**: `posts`, `comments` and `notifications` are in the `supabase_realtime` publication.
+
+## AI features
+
+All AI calls go through one edge function, `ai`, which requires a signed-in user.
+
+| Feature           | How it works                                                                                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Moderation        | Text and images are checked with OpenAI `omni-moderation-latest` before a post is saved, and comment text before it is posted. If the check fails to run, the content is allowed. |
+| Captions and tags | Groq (`qwen/qwen3.8-27b`, vision) with Gemini (`gemini-3.8-flash`) as the fallback. Tags come from a fixed list of 12.                                                            |
+| Semantic search   | Text is embedded with Supabase's built-in `gte-small` model and matched with pgvector.                                                                                            |
+| For you feed      | Liking a post raises your score for its tags. The feed ranks other users' posts by those scores.                                                                                  |
+
+### Deploying the edge function
+
+Set the secrets, then deploy. JWT verification is off because the function checks the caller itself.
+
+```bash
+supabase secrets set OPENAI_API_KEY=... GROQ_API_KEY=... GEMINI_API_KEY=...
+supabase functions deploy ai --no-verify-jwt
+```
